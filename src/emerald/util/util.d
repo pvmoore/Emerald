@@ -1,4 +1,4 @@
-module emerald.util;
+module emerald.util.util;
 
 import emerald.all;
 
@@ -8,7 +8,7 @@ float clamp(float x) pure {
     return x<0 ? 0 : x>1 ? 1 : x;
 }
 
-Vec clamp(ref Vec v) pure {
+float3 clamp(ref float3 v) pure {
     v.x = clamp(v.x);
     v.y = clamp(v.y);
     v.z = clamp(v.z);
@@ -16,5 +16,5 @@ Vec clamp(ref Vec v) pure {
 }
 
 float gamma(float x) pure {
-    return pow(clamp(x),1.0/2.2);
+    return pow(clamp(x), 1.0/2.2);
 }

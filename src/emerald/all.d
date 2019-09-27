@@ -7,15 +7,13 @@ public:
 version(LDC) {
     import ldc.attributes : fastmath;
 } else {
-    struct fastmath {
-
-    }
+    struct fastmath {}
 }
 
 import logging : log, flushLog;
-import common : ObjectCache;
+import common  : From;
 import maths :
-    //AABB,
+    AABB,
     FastRNG,
     max,
     min,
@@ -23,15 +21,13 @@ import maths :
     Ray,
     Sphere,
     TentFilter,
-    Vector2,
-    Vector3;
+    float2,
+    float3;
 import gl :
     ApplicationListenerAdapter,
     OpenGL,
     PixelBuffer;
 import resources : BMP;
-
-alias Vec = Vector3;
 
 import core.thread      : Thread;
 import core.atomic      : atomicOp;
@@ -46,9 +42,12 @@ import std.math			: pow, sqrt, PI, M_1_PI,
                           fabs, cos, sin;
 
 import emerald.emerald;
-import emerald.material;
-import emerald.model;
-import emerald.random;
-import emerald.util;
+
+import emerald.gen.material;
+import emerald.gen.model;
+import emerald.gen.raytracer;
+
+import emerald.util.random;
+import emerald.util.util;
 
 import emerald.render.swrenderer;

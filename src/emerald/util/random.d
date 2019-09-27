@@ -1,4 +1,4 @@
-module emerald.random;
+module emerald.util.random;
 
 import emerald.all;
 import std.random : uniform, Random, unpredictableSeed;

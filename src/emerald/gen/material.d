@@ -1,4 +1,4 @@
-module emerald.material;
+module emerald.gen.material;
 
 import emerald.all;
 
@@ -16,11 +16,11 @@ import emerald.all;
  */
 __gshared Material GLASS  = Material.refract(1.5);
 __gshared Material MIRROR = Material.mirror(1);
-__gshared Material LIGHT  = Material.light(Vec(12,12,12));
+__gshared Material LIGHT  = Material.light(float3(12,12,12));
 
 final class Material {
-    Vec colour   = Vec(1,1,1);
-    Vec emission = Vec(0,0,0);
+    float3 colour   = float3(1,1,1);
+    float3 emission = float3(0,0,0);
     float roughness    = 0;
     float diffusePower = 0;
     float reflectance  = 0;
@@ -29,38 +29,38 @@ final class Material {
     bool isReflective;
     bool isRefractive;
 
-    static Material diffuse(Vec c, float power=1) {
-        Material m = new Material();
-        m.colour = c;
-        m.isDiffuse = true;
+    static Material diffuse(float3 c, float power=1) {
+        Material m     = new Material();
+        m.colour       = c;
+        m.isDiffuse    = true;
         m.diffusePower = power;
         return m;
     }
-    static Material light(Vec emission) {
-        Material m = new Material();
-        m.colour   = Vec(0,0,0);
-        m.emission = emission;
+    static Material light(float3 emission) {
+        Material m  = new Material();
+        m.colour    = float3(0,0,0);
+        m.emission  = emission;
         m.isDiffuse = true;
         return m;
     }
     static Material mirror(float r) {
-        Material m = new Material();
-        m.reflectance = r;
+        Material m     = new Material();
+        m.reflectance  = r;
         m.isReflective = true;
         return m;
     }
     static Material refract(float eta) {
-        Material m = new Material();
+        Material m     = new Material();
         m.refractIndex = eta;
         m.isRefractive = true;
         return m;
     }
 
-    auto c(Vec colour) {
+    auto c(float3 colour) {
         this.colour = colour;
         return this;
     }
-    auto e(Vec emission) {
+    auto e(float3 emission) {
         this.emission = emission;
         return this;
     }
