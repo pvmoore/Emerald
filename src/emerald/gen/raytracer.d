@@ -5,8 +5,10 @@ import emerald.all;
 @fastmath:
 final class RayTracer {
 private:
-    const SAMPS         = 10;
-    const INV_SAMPS     = 1.0/SAMPS;
+    enum PARALLEL       = true;
+    enum SAMPS          = 10;
+    enum INV_SAMPS      = 1.0/SAMPS;
+
     immutable float3 BLACK = float3(0,0,0);
     immutable float3 cx;
     immutable float3 cy;
@@ -26,7 +28,7 @@ private:
     float3[] colourTotals;
 public:
     uint samplesPerPixel()  { return iterations*SAMPS*4; }
-    double averageMegaSPP() { return totalMegaSPP/iterations; }
+    double averageMegaSPP() { return iterations == 0 ? 0 : totalMegaSPP/iterations; }
     float3[] getColours()   { return colours; }
     uint getIterations()    { return iterations; }
 
@@ -56,10 +58,17 @@ public:
         while(running) {
             StopWatch watch; watch.start();
 
-            // run lines in parallel
-            foreach(y; parallel(iota(0, height))) {
-                if(running) {
-                    rayTraceLine(y);
+            static if(PARALLEL) {
+                foreach(y; parallel(iota(0, height))) {
+                    if(running) {
+                        rayTraceLine(y);
+                    }
+                }
+            } else {
+                foreach(y; 0..height) {
+                    if(running) {
+                        rayTraceLine(y);
+                    }
                 }
             }
             watch.stop();
@@ -83,10 +92,12 @@ public:
     }
     void rayTracePixel(uint x, uint y) {
         float3 colour = float3(0,0,0);
-        // 2x2 supersample
-        for(int sy=0; sy<2; sy++)
-        for(int sx=0; sx<2; sx++) {
-            colour += sample(x,y, sx, sy)*0.25f;
+
+        /* 2x2 supersample */
+        for(int sy=0; sy<2; sy++) {
+            for(int sx=0; sx<2; sx++) {
+                colour += sample(x,y, sx, sy)*0.25f;
+            }
         }
         colourTotals[x+(y*width)] += colour;
     }

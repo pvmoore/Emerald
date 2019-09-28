@@ -1,0 +1,4 @@
+{
+    "d.dubCompiler": "ldc2",
+    "d.dubBuildType": "release",
+}

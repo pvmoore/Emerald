@@ -2,6 +2,7 @@
 	  function calls recursively.
 	- acceleration structures:
 		- BVH
+        - BIH
 		- single dimension AABB
 		- KD trees
 	- BVH - calculate the volume of the BVH to try to get it as 

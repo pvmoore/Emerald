@@ -10,8 +10,9 @@ version(LDC) {
     struct fastmath {}
 }
 
-import logging : log, flushLog;
-import common  : From;
+import logging   : log, flushLog;
+import common    : From;
+import resources : BMP;
 import maths :
     AABB,
     FastRNG,
@@ -27,21 +28,21 @@ import gl :
     ApplicationListenerAdapter,
     OpenGL,
     PixelBuffer;
-import resources : BMP;
 
-import core.thread      : Thread;
-import core.atomic      : atomicOp;
-import std.conv 		: to;
-import std.stdio		: writefln;
-import std.format       : format;
-import std.datetime.stopwatch : StopWatch;
-import std.string       : toStringz;
-import std.range        : iota;
-import std.parallelism  : parallel;
-import std.math			: pow, sqrt, PI, M_1_PI,
-                          fabs, cos, sin;
+
+import core.thread              : Thread;
+import core.atomic              : atomicOp;
+import std.conv 		        : to;
+import std.stdio		        : writefln;
+import std.format               : format;
+import std.datetime.stopwatch   : StopWatch;
+import std.string               : toStringz;
+import std.range                : iota;
+import std.parallelism          : parallel, defaultPoolThreads, totalCPUs;
+import std.math			        : pow, sqrt, PI, M_1_PI, fabs, cos, sin;
 
 import emerald.emerald;
+import emerald.photos;
 
 import emerald.gen.material;
 import emerald.gen.model;

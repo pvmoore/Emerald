@@ -2,13 +2,19 @@ module emerald.emerald;
 
 import emerald.all;
 
-const WIDTH 	= 820;
-const HEIGHT 	= 620;
-const VERSION 	= "0.3";
+
 
 final class Emerald : ApplicationListenerAdapter {
+private:
     OpenGL gl;
+    Model model;
+    RayTracer rayTracer;
     SWRenderer renderer;
+    Photographer photographer;
+public:
+    enum WIDTH 	    = 1000;
+    enum HEIGHT 	= 700;
+    enum VERSION 	= "0.4";
 
     this() {
         this.gl = new OpenGL(this, (h) {
@@ -19,13 +25,20 @@ final class Emerald : ApplicationListenerAdapter {
             h.showWindow = false;
             h.samples    = 0;
         });
-        renderer = new SWRenderer(gl, new Model(), WIDTH, HEIGHT);
+        initialise();
 
         gl.showWindow(true);
+    }
+    void initialise() {
+        this.model        = new Model();
+        this.rayTracer    = new RayTracer(model, WIDTH, HEIGHT);
+        this.renderer     = new SWRenderer(gl, rayTracer, WIDTH,HEIGHT );
+        this.photographer = new Photographer(rayTracer, WIDTH, HEIGHT);
     }
     void destroy() {
         log("Destroying...");
         renderer.destroy();
+        rayTracer.destroy();
         gl.destroy();
     }
     void run() {
@@ -35,7 +48,7 @@ final class Emerald : ApplicationListenerAdapter {
         try{
             if(keyCode==283) {
                 // print screen
-                renderer.writeBMP();
+                photographer.takeSnapshot(renderer.getPixelData());
             }
         }catch(Throwable t) {}
     }
