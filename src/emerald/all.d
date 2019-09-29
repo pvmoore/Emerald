@@ -22,16 +22,21 @@ import maths :
     Ray,
     Sphere,
     TentFilter,
+    RandomBuffer,
+    ImprovedPerlin,
     float2,
-    float3;
+    float3,
+    degrees;
 import gl :
     ApplicationListenerAdapter,
     OpenGL,
     PixelBuffer;
 
 
+import core.sync.mutex          : Mutex;
 import core.thread              : Thread;
 import core.atomic              : atomicOp;
+
 import std.conv 		        : to;
 import std.stdio		        : writefln;
 import std.format               : format;

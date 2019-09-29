@@ -7,17 +7,17 @@ private:
     RayTracer rayTracer;
     uint width, height;
     int lastScreenShotIteration = -1;
+    uint screenshotId;
 public:
     this(RayTracer rayTracer, uint width, uint height) {
-        this.rayTracer  = rayTracer;
-        this.width      = width;
-        this.height     = height;
+        this.rayTracer      = rayTracer;
+        this.width          = width;
+        this.height         = height;
+        this.screenshotId   = cast(uint)(getRandom()*100000);
     }
     void takeSnapshot(ubyte[] pixels) {
         if(lastScreenShotIteration==rayTracer.getIterations()) return;
         lastScreenShotIteration = rayTracer.getIterations();
-
-        auto screenshotId = cast(uint)(getRandom()*100000);
 
         BMP bmp = BMP.create_RGB888(width, height, pixels);
 
