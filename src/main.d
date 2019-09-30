@@ -33,7 +33,7 @@ void test() {
 		auto a = new Sphere(10, float3(0,0,0), null);
 		auto b = new Sphere(10, float3(10,0,0), null);
 		auto c = new Sphere(10, float3(0,10,0), null);
-		auto bvh = new BVH([a,b,c]);
+		auto bvh = BVH.build([a,b,c]);
 		log("bvh = \n%s", bvh.dump(""));
 	}
 }

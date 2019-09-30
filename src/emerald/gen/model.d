@@ -7,7 +7,7 @@ public:
     enum GREEN = float3(0,1,0);
 
 	Shape[] shapes;
-    BVH bvh;
+    Shape bvh;
 
 	this() {
 		//cornellBox();
@@ -16,7 +16,7 @@ public:
 		roughnessScene();
         //oneSphere();
 
-        this.bvh = new BVH(shapes);
+        this.bvh = BVH.build(shapes);
         log("bvh = \n%s", bvh.dump(""));
 	}
 private:

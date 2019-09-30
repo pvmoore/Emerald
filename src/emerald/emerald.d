@@ -2,8 +2,6 @@ module emerald.emerald;
 
 import emerald.all;
 
-
-
 final class Emerald : ApplicationListenerAdapter {
 private:
     OpenGL gl;
@@ -14,7 +12,7 @@ private:
 public:
     enum WIDTH 	    = 1000;
     enum HEIGHT 	= 700;
-    enum VERSION 	= "0.4";
+    enum VERSION 	= "0.5";
 
     this() {
         this.gl = new OpenGL(this, (h) {
