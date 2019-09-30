@@ -1,15 +1,24 @@
-module emerald.gen.model;
+module emerald.model.scene;
 
 import emerald.all;
 
-final class Model {
+final class Scene {
 public:
     enum GREEN = float3(0,1,0);
 
+    Camera camera;
 	Shape[] shapes;
     Shape bvh;
 
-	this() {
+	this(uint width, uint height) {
+
+        this.camera = new Camera(
+            float3(50,52,295.6),        // origin
+            float3(0,-0.042612, -1),    // direction
+            width,
+            height
+        );
+
 		//cornellBox();
 		//scene2();
 		//scene3();
@@ -19,6 +28,8 @@ public:
         this.bvh = BVH.build(shapes);
         log("bvh = \n%s", bvh.dump(""));
 	}
+
+
 private:
     void oneSphere() {
         addlargeRoom();

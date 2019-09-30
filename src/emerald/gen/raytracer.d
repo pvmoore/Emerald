@@ -11,18 +11,16 @@ private:
     enum PARALLEL       = true;
     enum SAMPS          = 1;
     enum INV_SAMPS      = 1.0/SAMPS;
-    enum MAX_DEPTH      = 9;
+    enum MAX_DEPTH      = 9;    // min=3, smallpt uses ~5
 
     immutable float3 BLACK = float3(0,0,0);
-    immutable float3 cx;
-    immutable float3 cy;
 
-    Model model;
+    Scene scene;
     uint width, height;
+
     float3[] colours;
     Mutex mutex;
 
-    Ray cam;
     bool running        = true;
     uint iterations     = 0;
     double totalMegaSPP = 0;
@@ -46,8 +44,8 @@ public:
         return colours.dup;
     }
 
-    this(Model model, uint width, uint height) {
-        this.model               = model;
+    this(Scene scene, uint width, uint height) {
+        this.scene               = scene;
         this.width               = width;
         this.height              = height;
         this.mutex               = new Mutex;
@@ -58,10 +56,6 @@ public:
             rowData[i].colours.length = width;
             rowData[i].ii             = new IntersectInfo;
         }
-
-        this.cam             = Ray(float3(50,52,295.6), (float3(0,-0.042612, -1)).normalised());
-        this.cx              = float3(width*0.5135/height, 0, 0);
-        this.cy              = (cx.cross(cam.direction)).normalised()*0.5135;
 
         this.thread          = new Thread(&trace);
         this.thread.isDaemon = false;
@@ -128,7 +122,7 @@ public:
             rayTracePixel(x, y);
         }
     }
-    void rayTracePixel(uint x, uint y) {
+    void rayTracePixel(int x, int y) {
         float3 colour = float3(0,0,0);
 
         /* 2x2 supersample */
@@ -143,20 +137,8 @@ public:
 
         float3 result = float3(0,0,0);
 
-        for(int s=0; s<SAMPS; s++) {
-            float dx = tentFilter.next();
-            float dy = tentFilter.next();
-
-            float3 d = cam.direction;
-            d += cx*( ( (sx-0.5 + dx)*0.5 + x)/width  - 0.5) +
-                 cy*( ( (sy-0.5 + dy)*0.5 + y)/height - 0.5);
-
-            d.normalise();
-
-            // Camera rays are pushed forward 140 to start in interior
-            Ray ray = Ray(cam.origin+d*140, d);
-
-            result += clampLo(radiance(ray, y, 0));
+        for(auto s=0; s<SAMPS; s++) {
+            result += clampLo(radiance(scene.camera.makeRay(x,y, sx,sy), y, 0));
         }
 
         return result * INV_SAMPS;
@@ -169,17 +151,15 @@ public:
             return BLACK;
         }
 
-        // the hit object
-        auto obj      = ii.shape;
-        Material mat  = obj.getMaterial();
-        float3 f      = mat.colour;
-        float maxRefl = max(f.x, f.y, f.z);
+        // we hit this object
+        auto obj = ii.shape;
+        auto mat = obj.getMaterial();
 
-        if(depth++==MAX_DEPTH || getRandom() >= maxRefl) {
+        if(depth++==MAX_DEPTH || getRandom() >= mat.maxReflectance) {
             return mat.emission;
         }
 
-        f *= (1/maxRefl);
+        const f = mat.normalisedColour;
 
         const intersectPoint  = ii.hitPoint;
         const norm            = ii.normal;
@@ -219,7 +199,7 @@ public:
             float3 d  = u*cos(r1)*r2s + v*sin(r1)*r2s + w*sqrt(1-r2);
             d.normalise();
 
-            Ray ray   = Ray(intersectPoint,d);
+            Ray ray = Ray(intersectPoint,d);
             return _speckle() + f * (radiance(ray, row, depth));
         }
         // Ideal dielectric REFRACTION
@@ -284,12 +264,12 @@ public:
 
         static if(ACCELERATION_STRUCTURE==AccelerationStructure.NONE) {
             // 1.11
-            foreach(shape; model.shapes) {
+            foreach(shape; scene.shapes) {
                 shape.intersect(r, ii);
             }
         } else static if(ACCELERATION_STRUCTURE==AccelerationStructure.BVH) {
             // 1.4
-            model.bvh.intersect(r, ii);
+            scene.bvh.intersect(r, ii);
         } else static if(ACCELERATION_STRUCTURE==AccelerationStructure.BIH) {
             //
             assert(false);

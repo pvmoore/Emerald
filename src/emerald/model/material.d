@@ -1,4 +1,4 @@
-module emerald.geom.material;
+module emerald.model.material;
 
 import emerald.all;
 
@@ -19,31 +19,33 @@ __gshared Material MIRROR = Material.mirror(1);
 __gshared Material LIGHT  = Material.light(float3(12,12,12));
 
 final class Material {
-    float3 colour      = float3(1,1,1);
-    float3 emission    = float3(0,0,0);
+    float3 speckleColour    = float3(0,0,0);
+    float3 emission         = float3(0,0,0);
+    float3 colour           = float3(1,1,1);
+    float3 normalisedColour = float3(1,1,1);
+
     float diffusePower = 0;
     float reflectance  = 0;
     float refractIndex = 0;
-
-    float3 speckleColour = float3(0,0,0);
     float specklePower = 0;
+    float maxReflectance    = 1;
 
     bool isDiffuse;
     bool isReflective;
     bool isRefractive;
 
     static Material diffuse(float3 c, float power=1) {
-        Material m     = new Material();
-        m.colour       = c;
-        m.isDiffuse    = true;
-        m.diffusePower = power;
+        Material m       = new Material();
+        m.c(c);
+        m.isDiffuse      = true;
+        m.diffusePower   = power;
         return m;
     }
     static Material light(float3 emission) {
-        Material m  = new Material();
-        m.colour    = float3(0,0,0);
-        m.emission  = emission;
-        m.isDiffuse = true;
+        Material m       = new Material();
+        m.c(float3(0,0,0));
+        m.emission       = emission;
+        m.isDiffuse      = true;
         return m;
     }
     static Material mirror(float r) {
@@ -60,7 +62,9 @@ final class Material {
     }
 
     auto c(float3 colour) {
-        this.colour = colour;
+        this.colour           = colour;
+        this.maxReflectance   = colour.max();
+        this.normalisedColour = colour / this.maxReflectance;
         return this;
     }
     auto e(float3 emission) {

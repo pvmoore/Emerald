@@ -25,7 +25,7 @@ public:
         this.height     = height;
         this.pixels     = new PixelBuffer(gl, float2(0,0), width, height);
 
-        gl.setWindowTitle("Emerald "~Emerald.VERSION~"   (wait a few seconds for the scene to be generated...)");
+        gl.setWindowTitle("Emerald "~VERSION~"   (wait a few seconds for the scene to be generated...)");
     }
     void destroy() {
         pixels.destroy();
@@ -34,7 +34,7 @@ public:
         if(updatePixels()) {
 
             auto title = "Emerald %s  [iteration: %s, samples per pixel: %s, samples per sec: %.3s million, threads: %s]"
-                .format(Emerald.VERSION, rayTracer.getIterations(),
+                .format(VERSION, rayTracer.getIterations(),
                     rayTracer.samplesPerPixel(), rayTracer.averageMegaSPP(),
                     totalCPUs());
 

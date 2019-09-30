@@ -46,16 +46,18 @@ import std.math			        : pow, sqrt, PI, M_1_PI, fabs, cos, sin;
 
 import emerald.emerald;
 import emerald.photos;
+import emerald.version_;
 
-import emerald.gen.model;
 import emerald.gen.raytracer;
 
-import emerald.geom.bih;
 import emerald.geom.bvh;
 import emerald.geom.intersect_info;
-import emerald.geom.material;
 import emerald.geom.shape;
 import emerald.geom.sphere;
+
+import emerald.model.camera;
+import emerald.model.material;
+import emerald.model.scene;
 
 import emerald.util.random;
 import emerald.util.util;

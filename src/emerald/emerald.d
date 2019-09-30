@@ -5,14 +5,13 @@ import emerald.all;
 final class Emerald : ApplicationListenerAdapter {
 private:
     OpenGL gl;
-    Model model;
+    Scene scene;
     RayTracer rayTracer;
     SWRenderer renderer;
     Photographer photographer;
 public:
-    enum WIDTH 	    = 1000;
-    enum HEIGHT 	= 700;
-    enum VERSION 	= "0.5";
+    enum WIDTH 	= 1000;
+    enum HEIGHT = 700;
 
     this() {
         this.gl = new OpenGL(this, (h) {
@@ -28,9 +27,9 @@ public:
         gl.showWindow(true);
     }
     void initialise() {
-        this.model        = new Model();
-        this.rayTracer    = new RayTracer(model, WIDTH, HEIGHT);
-        this.renderer     = new SWRenderer(gl, rayTracer, WIDTH,HEIGHT );
+        this.scene        = new Scene(WIDTH, HEIGHT);
+        this.rayTracer    = new RayTracer(scene, WIDTH, HEIGHT);
+        this.renderer     = new SWRenderer(gl, rayTracer, WIDTH,HEIGHT);
         this.photographer = new Photographer(rayTracer, WIDTH, HEIGHT);
     }
     void destroy() {

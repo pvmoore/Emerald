@@ -14,20 +14,26 @@ private:
     Shape right;
 	AABB aabb;
 	uint id;
+
 	this() {
 		this.id = ids++;
 	}
 public:
+	enum AxisStrategy { ROTATE, PICK_LONGEST }
+
     override AABB getAABB() 		{ return aabb; }
 	override Material getMaterial() { assert(false); }
 
-	static Shape build(Shape[] shapes, uint axis = 0) {
+	static Shape build(Shape[] shapes,
+					   AxisStrategy axisStrategy = AxisStrategy.PICK_LONGEST,
+					   uint axis = 0)
+	{
 		if(shapes.length==0) {
 			assert(false);
 		} else if(shapes.length==1) {
 			return shapes[0];
 		} else if(shapes.length==2) {
-			auto bvh = new BVH();
+			auto bvh  = new BVH();
 			bvh.left  = shapes[0];
 			bvh.right = shapes[1];
 			bvh.aabb  = bvh.left.getAABB().enclose(bvh.right.getAABB());
@@ -38,15 +44,21 @@ public:
 			for(auto i=1; i<shapes.length; i++) {
 				box.enclose(shapes[i].getAABB());
 			}
-			auto pivot = (box.max() + box.min()) * 0.5f;
+
+			if(axisStrategy==AxisStrategy.PICK_LONGEST) {
+				/* Pick the longest axis */
+				axis = box.longestAxis();
+			}
+
+			auto pivot = (box.max()[axis] + box.min()[axis]) * 0.5f;
 
 			/* now split according to correct axis */
-			auto midPoint = qsplit(shapes, pivot[axis], axis);
+			auto midPoint = qsplit(shapes, pivot, axis);
 
 			/* create a new bounding volume */
 			auto bvh  = new BVH;
-			bvh.left  = build(shapes[0..midPoint], (axis+1)%3);
-			bvh.right = build(shapes[midPoint..$], (axis+1)%3);
+			bvh.left  = build(shapes[0..midPoint], axisStrategy, (axis+1)%3);
+			bvh.right = build(shapes[midPoint..$], axisStrategy, (axis+1)%3);
 			bvh.aabb  = box;
 			return bvh;
 		}
