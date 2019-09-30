@@ -1,4 +1,4 @@
-module emerald.gen.material;
+module emerald.geom.material;
 
 import emerald.all;
 
@@ -19,12 +19,15 @@ __gshared Material MIRROR = Material.mirror(1);
 __gshared Material LIGHT  = Material.light(float3(12,12,12));
 
 final class Material {
-    float3 colour   = float3(1,1,1);
-    float3 emission = float3(0,0,0);
-    float roughness    = 0;
+    float3 colour      = float3(1,1,1);
+    float3 emission    = float3(0,0,0);
     float diffusePower = 0;
     float reflectance  = 0;
     float refractIndex = 0;
+
+    float3 speckleColour = float3(0,0,0);
+    float specklePower = 0;
+
     bool isDiffuse;
     bool isReflective;
     bool isRefractive;
@@ -74,8 +77,9 @@ final class Material {
         this.isRefractive = true;
         return this;
     }
-    auto rough(float r) {
-        this.roughness = r;
+    auto speckle(float3 c, float r) {
+        this.speckleColour = c;
+        this.specklePower  = r;
         return this;
     }
 }

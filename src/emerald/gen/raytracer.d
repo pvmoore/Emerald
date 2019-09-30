@@ -2,12 +2,16 @@ module emerald.gen.raytracer;
 
 import emerald.all;
 
+enum AccelerationStructure { NONE, BVH, BIH }
+enum ACCELERATION_STRUCTURE = AccelerationStructure.BVH;
+
 @fastmath:
 final class RayTracer {
 private:
     enum PARALLEL       = true;
     enum SAMPS          = 1;
     enum INV_SAMPS      = 1.0/SAMPS;
+    enum MAX_DEPTH      = 9;
 
     immutable float3 BLACK = float3(0,0,0);
     immutable float3 cx;
@@ -26,7 +30,11 @@ private:
     Thread thread;
 
     // Updated asynchronously
-    float3[] colourTotals;
+    struct Row {
+        float3[] colours;
+        IntersectInfo ii;
+    }
+    Row[] rowData;
 public:
     uint samplesPerPixel()  { return iterations*SAMPS*4; }
     double averageMegaSPP() { return iterations == 0 ? 0 : totalMegaSPP/iterations; }
@@ -39,20 +47,26 @@ public:
     }
 
     this(Model model, uint width, uint height) {
-        this.model  = model;
-        this.width  = width;
-        this.height = height;
-        this.mutex  = new Mutex;
+        this.model               = model;
+        this.width               = width;
+        this.height              = height;
+        this.mutex               = new Mutex;
         this.colours.length      = width*height;
-        this.colourTotals.length = width*height;
+        this.rowData.length      = height;
 
-        this.cam = Ray(float3(50,52,295.6), (float3(0,-0.042612, -1)).normalised());
-        this.cx  = float3(width*0.5135/height, 0, 0);
-        this.cy  = (cx.cross(cam.direction)).normalised()*0.5135;
+        for(auto i=0; i<height; i++) {
+            rowData[i].colours.length = width;
+            rowData[i].ii             = new IntersectInfo;
+        }
 
-        this.thread = new Thread(&trace);
-        thread.isDaemon = false;
-        thread.start();
+        this.cam             = Ray(float3(50,52,295.6), (float3(0,-0.042612, -1)).normalised());
+        this.cx              = float3(width*0.5135/height, 0, 0);
+        this.cy              = (cx.cross(cam.direction)).normalised()*0.5135;
+
+        this.thread          = new Thread(&trace);
+        this.thread.isDaemon = false;
+
+        this.thread.start();
     }
     void destroy() {
         if(thread) {
@@ -68,7 +82,7 @@ public:
             watch.start();
 
             static if(PARALLEL) {
-                defaultPoolThreads(2);
+                //defaultPoolThreads(2);
                 foreach(y; parallel(iota(0, height))) {
                     if(running) {
                         rayTraceLine(y);
@@ -90,14 +104,19 @@ public:
             megaSPP       = (numSamples/seconds)/1_000_000.0;
             totalMegaSPP += megaSPP;
 
-
             {
                 mutex.lock();
                 scope(exit) mutex.unlock();
 
                 auto tempColours = new float3[colours.length];
-                for(auto i=0; i<colours.length; i++) {
-                    tempColours[i] = colourTotals[i] / iterations;
+                uint dest = 0;
+                foreach(ref r; rowData) {
+
+                    for(auto i=0; i<width; i++) {
+                        tempColours[dest+i] = r.colours[i] / iterations;
+                    }
+
+                    dest += width;
                 }
 
                 colours = tempColours;
@@ -118,7 +137,7 @@ public:
                 colour += sample(x, y, sx, sy);
             }
         }
-        colourTotals[x+(y*width)] += (colour*0.25f);
+        rowData[y].colours[x] += (colour*0.25f);
     }
     float3 sample(int x, int y, int sx, int sy) {
 
@@ -137,73 +156,71 @@ public:
             // Camera rays are pushed forward 140 to start in interior
             Ray ray = Ray(cam.origin+d*140, d);
 
-            result += clampLo(radiance(ray, 0));
+            result += clampLo(radiance(ray, y, 0));
         }
 
         return result * INV_SAMPS;
     }
-    float3 radiance(Ray r, uint depth) {
-        float t;      // distance to intersection
-        uint id = 0;  // id of intersected object
-        if(!intersect(r, t, id)) {
+    float3 radiance(Ray r, uint row, uint depth) {
+
+        auto ii = rowData[row].ii;
+        if(!intersectRayWithWorld(r, ii)) {
             // if miss, return black
             return BLACK;
         }
 
         // the hit object
-        auto obj      = model.spheres[id];
-        Material mat  = obj.data;
+        auto obj      = ii.shape;
+        Material mat  = obj.getMaterial();
         float3 f      = mat.colour;
         float maxRefl = max(f.x, f.y, f.z);
 
-        if(depth++==9 || getRandom() >= maxRefl) {
+        if(depth++==MAX_DEPTH || getRandom() >= maxRefl) {
             return mat.emission;
         }
 
         f *= (1/maxRefl);
 
-        // ray intersection point
-        const intersectPoint  = r.origin + r.direction*t;
-
-        // sphere normal
-        float3 norm = (intersectPoint-obj.pos).normalised();
-
-        const reflectAngle = norm.dot(r.direction);
+        const intersectPoint  = ii.hitPoint;
+        const norm            = ii.normal;
+        const reflectAngle    = norm.dot(r.direction);
 
         // properly oriented surface normal
         float3 nl = reflectAngle<0 ? norm : norm*-1;
 
         float3 _reflect() {
             Ray ray = Ray(intersectPoint, r.direction - norm*2*reflectAngle);
-            return radiance(ray, depth);
+            return radiance(ray, row, depth);
         }
-        float3 _roughen() {
+        float3 _speckle() {
             float3 e = mat.emission;
-            if(mat.roughness==0) return e;
+            if(mat.specklePower==0) return e;
 
-            float p = noise.get(intersectPoint);
-            e -= p*mat.roughness;
-            e += 0.5*mat.roughness;
+            float p = mat.specklePower * (perlin.get(intersectPoint) + 0.5);
+
+            e -= mat.speckleColour*p;
+
+            //e -= p;
+            //e += mat.speckleColour*0.2; // 0.5*mat.specklePower
             return e;
         }
         // Ideal SPECULAR reflection
         float3 _specular() {
-            return _roughen() + f * _reflect();
+            return _speckle() + f * _reflect();
         }
         // Ideal DIFFUSE reflection
         float3 _diffuse() {
             float r1  = 2*PI*getRandom();
             float r2  = getRandom();
             float r2s = sqrt(r2);
-            float3 w = nl;
-            float3 u = ((fabs(w.x)>0.1 ? float3(0,1,0) : float3(1,0,0)).cross(w)).normalised();
-            float3 v = w.cross(u);
-            float3 d = u*cos(r1)*r2s + v*sin(r1)*r2s + w*sqrt(1-r2);
+            float3 w  = nl;
+            float3 u  = ((fabs(w.x)>0.1 ? float3(0,1,0) : float3(1,0,0)).cross(w)).normalised();
+            float3 v  = w.cross(u);
+            float3 d  = u*cos(r1)*r2s + v*sin(r1)*r2s + w*sqrt(1-r2);
             d.normalise();
 
-            Ray ray  = Ray(intersectPoint,d);
-            float3 q = _roughen() + f * (radiance(ray, depth));
-            return q;
+            Ray ray   = Ray(intersectPoint,d);
+            return _speckle() + f * (radiance(ray, row, depth));
         }
         // Ideal dielectric REFRACTION
         float3 _refraction() {
@@ -219,16 +236,16 @@ public:
 
             if(cos2t<0) {
                 // Total internal reflection
-                return _roughen() + f * _reflect();
+                return _speckle() + f * _reflect();
             }
             // choose reflection or refraction
             const tdir = (r.direction*nnt - norm*((into?1:-1)*(ddn*nnt+sqrt(cos2t)))).normalised();
-            float a  = toRI-fromRI;
-            float b  = toRI+fromRI;
-            float R0 = (a*a)/(b*b);
-            float c  = 1.0-(into ? -ddn:tdir.dot(norm));
-            float Re = R0+(1.0-R0)*c*c*c*c*c;
-            float Tr = 1.0-Re;
+            float a    = toRI-fromRI;
+            float b    = toRI+fromRI;
+            float R0   = (a*a)/(b*b);
+            float c    = 1.0-(into ? -ddn:tdir.dot(norm));
+            float Re   = R0+(1.0-R0)*c*c*c*c*c;
+            float Tr   = 1.0-Re;
 
             // Russian roulette
             if(depth>2) {
@@ -239,11 +256,11 @@ public:
                 }
                 // refract
                 Ray ray  = Ray(intersectPoint, tdir);
-                return mat.emission + f*radiance(ray,depth)*(Tr/(1-P));
+                return mat.emission + f*radiance(ray, row, depth)*(Tr/(1-P));
             }
             // reflect and refract
             Ray ray = Ray(intersectPoint, tdir);
-            return mat.emission + f*_reflect()*Re + radiance(ray,depth)*Tr;
+            return mat.emission + f*_reflect()*Re + radiance(ray, row, depth)*Tr;
         }
 
         float3 col;
@@ -262,16 +279,24 @@ public:
         }
         return col * (1.0/factor);
     }
-    bool intersect(Ray r, ref float t, ref uint id) {
-        t = float.max;
-        float d;
-        uint num = cast(int)model.spheres.length;
-        for(uint i=num; i--; ) {
-            if(model.spheres[i].intersect(r, d) && d<t) {
-                t  = d;
-                id = i;
+    bool intersectRayWithWorld(Ray r, IntersectInfo ii) {
+        ii.reset();
+
+        static if(ACCELERATION_STRUCTURE==AccelerationStructure.NONE) {
+            // 1.11
+            foreach(shape; model.shapes) {
+                shape.intersect(r, ii);
             }
+        } else static if(ACCELERATION_STRUCTURE==AccelerationStructure.BVH) {
+            // 1.4
+            model.bvh.intersect(r, ii);
+        } else static if(ACCELERATION_STRUCTURE==AccelerationStructure.BIH) {
+            //
+            assert(false);
+        } else {
+            static assert(false);
         }
-        return t < float.max;
+
+        return ii.intersected();
     }
 }

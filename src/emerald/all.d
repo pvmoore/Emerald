@@ -11,32 +11,30 @@ version(LDC) {
 }
 
 import logging   : log, flushLog;
-import common    : From;
+import common    : as, From;
 import resources : BMP;
-import maths :
-    AABB,
-    FastRNG,
-    max,
-    min,
-    RandomNoise3D,
-    Ray,
-    Sphere,
-    TentFilter,
-    RandomBuffer,
-    ImprovedPerlin,
-    float2,
-    float3,
-    degrees;
-import gl :
-    ApplicationListenerAdapter,
-    OpenGL,
-    PixelBuffer;
+import maths     : AABB,
+                   FastRNG,
+                   ImprovedPerlin,
+                   RandomBuffer,
+                   RandomNoise3D,
+                   Ray,
+                   TentFilter,
+                   degrees,
+                   float2,
+                   float3,
+                   max,
+                   min;
+import gl        : ApplicationListenerAdapter,
+                   OpenGL,
+                   PixelBuffer;
 
 
 import core.sync.mutex          : Mutex;
 import core.thread              : Thread;
 import core.atomic              : atomicOp;
 
+import std.array                : appender;
 import std.conv 		        : to;
 import std.stdio		        : writefln;
 import std.format               : format;
@@ -49,9 +47,15 @@ import std.math			        : pow, sqrt, PI, M_1_PI, fabs, cos, sin;
 import emerald.emerald;
 import emerald.photos;
 
-import emerald.gen.material;
 import emerald.gen.model;
 import emerald.gen.raytracer;
+
+import emerald.geom.bih;
+import emerald.geom.bvh;
+import emerald.geom.intersect_info;
+import emerald.geom.material;
+import emerald.geom.shape;
+import emerald.geom.sphere;
 
 import emerald.util.random;
 import emerald.util.util;
