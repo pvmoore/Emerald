@@ -5,6 +5,6 @@ import emerald.all;
 interface Shape {
     AABB getAABB();
     Material getMaterial();
-    bool intersect(ref Ray r, IntersectInfo intersect, float tmin = 0.01, float tmax = float.max);
+    bool intersect(ref Ray r, IntersectInfo intersect, float tmin = 0.01);
     string dump(string padding);
 }

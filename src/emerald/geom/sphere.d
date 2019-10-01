@@ -26,9 +26,9 @@ public:
      *
      * @param t = hit point
      */
-    override bool intersect(ref Ray r, IntersectInfo ii, float tmin = 0.01, float tmax = float.max) {
+    override bool intersect(ref Ray r, IntersectInfo ii, float tmin) {
         float t;
-        if(getIntersect(r, t, tmin, tmax) && t<ii.t) {
+        if(getIntersect(r, t, tmin, ii.t)) {
             ii.t          = t;
 			ii.hitPoint   = r.origin + r.direction*t;
 			ii.normal     = (ii.hitPoint - centre).normalised();

@@ -138,12 +138,13 @@ public:
         float3 result = float3(0,0,0);
 
         for(auto s=0; s<SAMPS; s++) {
-            result += clampLo(radiance(scene.camera.makeRay(x,y, sx,sy), y, 0));
+            auto ray = scene.camera.makeRay(x,y, sx,sy);
+            result += clampLo(radiance(ray, y, 0));
         }
 
         return result * INV_SAMPS;
     }
-    float3 radiance(Ray r, uint row, uint depth) {
+    float3 radiance(ref Ray r, uint row, uint depth) {
 
         auto ii = rowData[row].ii;
         if(!intersectRayWithWorld(r, ii)) {
@@ -259,16 +260,16 @@ public:
         }
         return col * (1.0/factor);
     }
-    bool intersectRayWithWorld(Ray r, IntersectInfo ii) {
+    bool intersectRayWithWorld(ref Ray r, IntersectInfo ii) {
         ii.reset();
 
         static if(ACCELERATION_STRUCTURE==AccelerationStructure.NONE) {
-            // 1.11
+            // 1.15
             foreach(shape; scene.shapes) {
                 shape.intersect(r, ii);
             }
         } else static if(ACCELERATION_STRUCTURE==AccelerationStructure.BVH) {
-            // 1.4
+            // 1.6
             scene.bvh.intersect(r, ii);
         } else static if(ACCELERATION_STRUCTURE==AccelerationStructure.BIH) {
             //

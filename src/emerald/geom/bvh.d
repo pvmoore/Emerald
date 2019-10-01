@@ -64,17 +64,17 @@ public:
 		}
 	}
 
-	override bool intersect(ref Ray r, IntersectInfo ii, float tmin = 0.01, float tmax = float.max) {
+	override bool intersect(ref Ray r, IntersectInfo ii, float tmin) {
 		float t;
-	    if(!(aabb.intersect(r, t, tmin, tmax))) {
+	    if(!(aabb.intersect(r, t, tmin, ii.t))) {
 	        return false;
 	    }
 
         tmin = min(t, tmin);
 
 		/* Call hit on both branches to get the minimum intersection */
-		bool isahit1 = right.intersect(r, ii, tmin, tmax);
-		bool isahit2 =  left.intersect(r, ii, tmin, ii.t);
+		bool isahit1 = right.intersect(r, ii, tmin);
+		bool isahit2 =  left.intersect(r, ii, tmin);
 		return isahit1 || isahit2;
 	}
 	override string dump(string padding) {
