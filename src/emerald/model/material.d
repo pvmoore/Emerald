@@ -19,16 +19,16 @@ __gshared Material MIRROR = Material.mirror(1);
 __gshared Material LIGHT  = Material.light(float3(12,12,12));
 
 final class Material {
-    float3 speckleColour    = float3(0,0,0);
     float3 emission         = float3(0,0,0);
     float3 colour           = float3(1,1,1);
     float3 normalisedColour = float3(1,1,1);
 
-    float diffusePower = 0;
-    float reflectance  = 0;
-    float refractIndex = 0;
-    float specklePower = 0;
-    float maxReflectance    = 1;
+    Texture texture;
+
+    float diffusePower   = 0;
+    float reflectance    = 0;
+    float refractIndex   = 0;
+    float maxReflectance = 1;
 
     bool isDiffuse;
     bool isReflective;
@@ -81,9 +81,8 @@ final class Material {
         this.isRefractive = true;
         return this;
     }
-    auto speckle(float3 c, float r) {
-        this.speckleColour = c;
-        this.specklePower  = r;
+    auto tex(Texture t) {
+        this.texture = t;
         return this;
     }
 }

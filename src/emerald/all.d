@@ -11,9 +11,11 @@ version(LDC) {
 }
 
 import logging   : log, flushLog;
-import common    : as, From;
-import resources : BMP;
+import common    : as, expect, From;
+import resources : Image, BMP, PNG;
 import maths     : AABB,
+                   Angle,
+                   clamp,
                    FastRNG,
                    ImprovedPerlin,
                    RandomBuffer,
@@ -23,6 +25,9 @@ import maths     : AABB,
                    degrees,
                    float2,
                    float3,
+                   float4,
+                   mat4,
+                   uint4,
                    max,
                    min;
 import gl        : ApplicationListenerAdapter,
@@ -58,6 +63,7 @@ import emerald.geom.sphere;
 import emerald.model.camera;
 import emerald.model.material;
 import emerald.model.scene;
+import emerald.model.texture;
 
 import emerald.util.random;
 import emerald.util.util;

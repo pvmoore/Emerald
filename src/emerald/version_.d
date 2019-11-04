@@ -9,7 +9,7 @@ enum VERSION = "0.5";
  *
  *
  *
- * 0.5 -
+ * 0.5 - Add sphere texturing.
  * 0.4 - Add bounding volume hierarchy data structure.
  *
  * ##################################################################
@@ -17,8 +17,6 @@ enum VERSION = "0.5";
  * ##################################################################
  * - Create a bubble sphere with eta=1 (same as air)
  * - Rewrite so that it is 'forward' eg. it does not spawn function calls recursively.
- * - Add BIH acceleration structure
- *
  *
  *
  *

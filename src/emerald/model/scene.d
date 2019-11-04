@@ -2,6 +2,15 @@ module emerald.model.scene;
 
 import emerald.all;
 
+/**
+ *  +y
+ *   |
+ *   |
+ *   |
+ *   ------> +x
+ *
+ *  z increases pointing out of the screen
+ */
 final class Scene {
 public:
     enum GREEN = float3(0,1,0);
@@ -9,6 +18,14 @@ public:
     Camera camera;
 	Shape[] shapes;
     Shape bvh;
+
+    Texture marbleTex;
+    Texture brickTex;
+    Texture rock4Tex;
+    Texture redWhiteTex;
+    Texture uvsTex;
+    Texture earthTex;
+    Texture floorTex;
 
 	this(uint width, uint height) {
 
@@ -19,24 +36,93 @@ public:
             height
         );
 
+        this.marbleTex   = new Texture("C:/pvmoore/_assets/images/png/marble.png");
+        this.brickTex    = new Texture("C:/pvmoore/_assets/images/png/brick.png");
+        this.rock4Tex    = new Texture("C:/pvmoore/_assets/images/png/rock8.png");
+        this.redWhiteTex = new Texture("C:/pvmoore/_assets/images/png/red_white.png");
+        this.uvsTex      = new Texture("C:/pvmoore/_assets/images/png/uvs.png");
+        this.earthTex    = new Texture("C:/pvmoore/_assets/images/png/earth.png");
+        this.floorTex    = new Texture("C:/pvmoore/_assets/images/png/floor.png");
+
 		//cornellBox();
 		//scene2();
 		//scene3();
-		roughnessScene();
+		//manyBallScene();
         //oneSphere();
+        manySpheres();
 
         this.bvh = BVH.build(shapes);
         log("bvh = \n%s", bvh.dump(""));
 	}
 
-
 private:
     void oneSphere() {
+
+        mat4 rotY = mat4.rotateY((-45).degrees);
+        mat4 rotX = mat4.rotateX((45).degrees);
+
+        mat4 rotXY = rotY * rotX;
+
         addlargeRoom();
         shapes ~= [
         //         radius,  position,                   material
-        new Sphere(40,      float3(50,40,40),           Material.diffuse(float3(1,0.8,0.3)).speckle(GREEN, 1)),
+        new Sphere(40,      float3(50,40,40),           Material.diffuse(float3(1.0, 1.0, 1.0))
+                                                                .tex(floorTex))
+            .transform(rotXY),
 
+        new Sphere(600,	    float3(50,681.6-.27,81.6),	LIGHT)
+        ];
+    }
+    void manySpheres() {
+
+        addlargeRoom();
+
+        mat4 rotY = mat4.rotateY((-45).degrees);
+        mat4 rotZ = mat4.rotateZ((-60).degrees);
+
+        mat4 Y45 = mat4.rotateX((45).degrees);
+        mat4 Y90 = mat4.rotateX((90).degrees);
+
+        auto Ym45 = mat4.rotateX((-45).degrees);
+
+        mat4 rotXY  = rotY * Y90;
+        mat4 rotXYZ = rotZ * rotY * Y45;
+
+        mat4 brickTrans =  Ym45 * rotY;
+        mat4 earthTrans = mat4.rotateY((-90).degrees);
+
+        shapes ~= [
+        //         radius,  position,           material
+
+        // bottom
+        new Sphere(18,      float3(-5,22,60),   Material.diffuse(float3(1.0, 1.0, 1.0))
+                                                        .tex(rock4Tex)),
+        new Sphere(18,      float3(31,22,60),   Material.diffuse(float3(1.0, 1.0, 1.0))
+                                                        .tex(earthTex)).transform(earthTrans),
+
+        new Sphere(18,      float3(67,22,60),  Material.refract(1.333)),
+
+        new Sphere(18,      float3(103,22,60),  Material.diffuse(float3(1.0, 1.0, 1.0))
+                                                        .tex(redWhiteTex)).transform(rotXYZ),
+
+
+        // top
+        new Sphere(18,      float3(-5,58,60),   Material.diffuse(float3(1.0, 1.0, 1.0))
+                                                        .tex(brickTex)).transform(brickTrans),
+        new Sphere(18,      float3(31,58,60),   Material.mirror(1)),
+
+        new Sphere(18,      float3(67,58,60),   Material.diffuse(float3(1.0, 1.0, 1.0))
+                                                        .tex(marbleTex)).transform(rotXY),
+
+        new Sphere(18,      float3(103,58,60),   Material.diffuse(float3(1.0, 1.0, 1.0))
+                                                        .tex(uvsTex)).transform(rotXY),
+
+
+        // inside glass
+        new Sphere(5,       float3(67,22,60),  Material.diffuse(float3(1, 1, 1))
+                                                        .tex(uvsTex)).transform(rotXYZ),
+
+        // light
         new Sphere(600,	    float3(50,681.6-.27,81.6),	LIGHT)
         ];
     }
@@ -142,33 +228,33 @@ private:
         new Sphere(600,	float3(50,681.6-.27,81.6),	LIGHT)
         ];
     }
-    void roughnessScene() {
+    void manyBallScene() {
         addlargeRoom();
         shapes ~= [
         //                  radius,  position,                  material
         new Sphere(10,		float3( 0,10,45),			Material.diffuse(float3(1,0.8,0.3))),
-        new Sphere(10,		float3(25,10,40),			Material.diffuse(float3(1,0.8,0.3)).speckle(GREEN, 0.2)),
-        new Sphere(10,		float3(50,10,40),			Material.diffuse(float3(1,0.8,0.3)).speckle(GREEN, 0.5)),
-        new Sphere(10,		float3(75,10,40),			Material.diffuse(float3(1,0.8,0.3)).speckle(GREEN, 0.75)),
-        new Sphere(10,		float3(100,10,40),			Material.diffuse(float3(1,0.8,0.3)).speckle(GREEN, 1)),
+        new Sphere(10,		float3(25,10,40),			Material.diffuse(float3(1,0.8,0.3))),
+        new Sphere(10,		float3(50,10,40),			Material.diffuse(float3(1,0.8,0.3))),
+        new Sphere(10,		float3(75,10,40),			Material.diffuse(float3(1,0.8,0.3))),
+        new Sphere(10,		float3(100,10,40),			Material.diffuse(float3(1,0.8,0.3))),
 
         new Sphere(10,		float3( 0,30,40),			Material.diffuse(float3(1,0.8,0.3)).refl(1)),
-        new Sphere(10,		float3(25,30,40),			Material.diffuse(float3(1,0.8,0.3)).refl(1).speckle(GREEN, 0.2)),
-        new Sphere(10,		float3(50,30,40),			Material.diffuse(float3(1,0.8,0.3)).refl(1).speckle(GREEN, 0.5)),
-        new Sphere(10,		float3(75,30,40),			Material.diffuse(float3(1,0.8,0.3)).refl(1).speckle(GREEN, 0.75)),
-        new Sphere(10,		float3(100,30,40),			Material.diffuse(float3(1,0.8,0.3)).refl(1).speckle(GREEN, 1)),
+        new Sphere(10,		float3(25,30,40),			Material.diffuse(float3(1,0.8,0.3)).refl(1)),
+        new Sphere(10,		float3(50,30,40),			Material.diffuse(float3(1,0.8,0.3)).refl(1)),
+        new Sphere(10,		float3(75,30,40),			Material.diffuse(float3(1,0.8,0.3)).refl(1)),
+        new Sphere(10,		float3(100,30,40),			Material.diffuse(float3(1,0.8,0.3)).refl(1)),
 
         new Sphere(10,		float3( 2,50,40),			Material.mirror(1)),
-        new Sphere(10,		float3(25,50,40),			Material.mirror(1).speckle(GREEN, 0.2)),
-        new Sphere(10,		float3(50,50,40),			Material.mirror(1).speckle(GREEN, 0.5)),
-        new Sphere(10,		float3(75,50,40),			Material.mirror(1).speckle(GREEN, 0.75)),
-        new Sphere(10,		float3(100,50,40),			Material.mirror(1).speckle(GREEN, 1)),
+        new Sphere(10,		float3(25,50,40),			Material.mirror(1)),
+        new Sphere(10,		float3(50,50,40),			Material.mirror(1)),
+        new Sphere(10,		float3(75,50,40),			Material.mirror(1)),
+        new Sphere(10,		float3(100,50,40),			Material.mirror(1)),
 
         new Sphere(10,		float3( 2,70,40),			Material.refract(1.5)),
-        new Sphere(10,		float3(25,70,40),			Material.refract(1.5).speckle(GREEN, 0.2)),
-        new Sphere(10,		float3(50,70,40),			Material.refract(1.5).speckle(GREEN, 0.5)),
-        new Sphere(10,		float3(75,70,40),			Material.refract(1.5).speckle(GREEN, 0.75)),
-        new Sphere(10,		float3(100,70,40),			Material.refract(1.5).speckle(GREEN, 1)),
+        new Sphere(10,		float3(25,70,40),			Material.refract(1.5)),
+        new Sphere(10,		float3(50,70,40),			Material.refract(1.5)),
+        new Sphere(10,		float3(75,70,40),			Material.refract(1.5)),
+        new Sphere(10,		float3(100,70,40),			Material.refract(1.5)),
 
 
         new Sphere(600,	float3(50,681.6-.27,81.6),	LIGHT)

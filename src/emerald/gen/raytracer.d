@@ -12,8 +12,7 @@ private:
     enum SAMPS          = 1;
     enum INV_SAMPS      = 1.0/SAMPS;
     enum MAX_DEPTH      = 9;    // min=3, smallpt uses ~5
-
-    immutable float3 BLACK = float3(0,0,0);
+    enum BLACK          = float3(0,0,0);
 
     Scene scene;
     uint width, height;
@@ -160,11 +159,18 @@ public:
             return mat.emission;
         }
 
-        const f = mat.normalisedColour;
-
         const intersectPoint  = ii.hitPoint;
         const norm            = ii.normal;
         const reflectAngle    = norm.dot(r.direction);
+
+        float3 f;
+
+        if(mat.texture) {
+            auto col = mat.texture.sample(obj.toUV(ii.hitPoint));
+            f = col * mat.colour;
+        } else {
+            f = mat.normalisedColour;
+        }
 
         // properly oriented surface normal
         float3 nl = reflectAngle<0 ? norm : norm*-1;
@@ -173,21 +179,9 @@ public:
             Ray ray = Ray(intersectPoint, r.direction - norm*2*reflectAngle);
             return radiance(ray, row, depth);
         }
-        float3 _speckle() {
-            float3 e = mat.emission;
-            if(mat.specklePower==0) return e;
-
-            float p = mat.specklePower * (perlin.get(intersectPoint) + 0.5);
-
-            e -= mat.speckleColour*p;
-
-            //e -= p;
-            //e += mat.speckleColour*0.2; // 0.5*mat.specklePower
-            return e;
-        }
         // Ideal SPECULAR reflection
         float3 _specular() {
-            return _speckle() + f * _reflect();
+            return mat.emission + f * _reflect();
         }
         // Ideal DIFFUSE reflection
         float3 _diffuse() {
@@ -201,7 +195,7 @@ public:
             d.normalise();
 
             Ray ray = Ray(intersectPoint,d);
-            return _speckle() + f * (radiance(ray, row, depth));
+            return mat.emission + f * (radiance(ray, row, depth));
         }
         // Ideal dielectric REFRACTION
         float3 _refraction() {
@@ -217,7 +211,7 @@ public:
 
             if(cos2t<0) {
                 // Total internal reflection
-                return _speckle() + f * _reflect();
+                return mat.emission + f * _reflect();
             }
             // choose reflection or refraction
             const tdir = (r.direction*nnt - norm*((into?1:-1)*(ddn*nnt+sqrt(cos2t)))).normalised();
@@ -273,7 +267,7 @@ public:
             scene.bvh.intersect(r, ii);
         } else static if(ACCELERATION_STRUCTURE==AccelerationStructure.BIH) {
             //
-            assert(false);
+            static assert(false);
         } else {
             static assert(false);
         }

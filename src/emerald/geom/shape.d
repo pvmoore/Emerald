@@ -7,4 +7,5 @@ interface Shape {
     Material getMaterial();
     bool intersect(ref Ray r, IntersectInfo intersect, float tmin = 0.01);
     string dump(string padding);
+    float2 toUV(float3 hitPoint);
 }

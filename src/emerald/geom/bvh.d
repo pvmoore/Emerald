@@ -23,6 +23,7 @@ public:
 
     override AABB getAABB() 		{ return aabb; }
 	override Material getMaterial() { assert(false); }
+	override float2 toUV(float3 hitPoint) { expect(false); assert(false); }
 
 	static Shape build(Shape[] shapes,
 					   AxisStrategy axisStrategy = AxisStrategy.PICK_LONGEST,

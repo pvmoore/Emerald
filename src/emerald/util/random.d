@@ -22,3 +22,14 @@ __gshared static this() {
 float getRandom() {
     return randomBuffer.next();
 }
+
+
+struct Random {
+    float rand;             // random number between 0 and 1
+    float sqrtRand;         // sqrt(rand)
+    float sqrt_1_sub_rand;  // sqrt(1-rand)
+
+    float _2_PI_rand;       // 2*PI*rand
+    float sin2PIRand;       // sin(_2_PI_rand)
+    float cos2PIRand;       // cos(_2_PI_rand)
+}
