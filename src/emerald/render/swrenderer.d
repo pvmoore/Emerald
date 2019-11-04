@@ -36,7 +36,7 @@ public:
             auto title = "Emerald %s  [iteration: %s, samples per pixel: %s, samples per sec: %.3s million, threads: %s]"
                 .format(VERSION, rayTracer.getIterations(),
                     rayTracer.samplesPerPixel(), rayTracer.averageMegaSPP(),
-                    totalCPUs());
+                    rayTracer.getNumThreads());
 
             gl.setWindowTitle(title);
         }

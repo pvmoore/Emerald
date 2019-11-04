@@ -42,10 +42,18 @@ public:
         gl.enterMainLoop();
     }
     override void keyPress(uint keyCode, uint scanCode, bool down, uint mods) nothrow {
+        if(!down) return;
         try{
-            if(keyCode==283) {
-                // print screen
-                photographer.takeSnapshot(renderer.getPixelData());
+            enum GLFW_KEY_PRINT_SCREEN = 283;
+            enum GLFW_KEY_PAUSE = 284;
+
+            switch(keyCode) {
+                case GLFW_KEY_PRINT_SCREEN:
+                    photographer.takeSnapshot(renderer.getPixelData());
+                    break;
+                case GLFW_KEY_PAUSE:
+                    break;
+                default: break;
             }
         }catch(Throwable t) {}
     }

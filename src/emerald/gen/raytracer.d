@@ -9,6 +9,7 @@ enum ACCELERATION_STRUCTURE = AccelerationStructure.BVH;
 final class RayTracer {
 private:
     enum PARALLEL       = true;
+    enum MAX_THREADS    = 3;    // if PARALLEL == true
     enum SAMPS          = 1;
     enum INV_SAMPS      = 1.0/SAMPS;
     enum MAX_DEPTH      = 9;    // min=3, smallpt uses ~5
@@ -24,6 +25,7 @@ private:
     uint iterations     = 0;
     double totalMegaSPP = 0;
     double megaSPP      = 0;
+    uint numThreads;
     Thread thread;
 
     // Updated asynchronously
@@ -36,6 +38,7 @@ public:
     uint samplesPerPixel()  { return iterations*SAMPS*4; }
     double averageMegaSPP() { return iterations == 0 ? 0 : totalMegaSPP/iterations; }
     uint getIterations()    { return iterations; }
+    uint getNumThreads()    { return numThreads; }
     float3[] getColours()   {
         mutex.lock();
         scope(exit) mutex.unlock();
@@ -54,6 +57,13 @@ public:
         for(auto i=0; i<height; i++) {
             rowData[i].colours.length = width;
             rowData[i].ii             = new IntersectInfo;
+        }
+
+        static if(PARALLEL) {
+            this.numThreads = min(MAX_THREADS, totalCPUs());
+            defaultPoolThreads(this.numThreads);
+        } else {
+            numThreads = 1;
         }
 
         this.thread          = new Thread(&trace);
@@ -75,7 +85,7 @@ public:
             watch.start();
 
             static if(PARALLEL) {
-                //defaultPoolThreads(2);
+
                 foreach(y; parallel(iota(0, height))) {
                     if(running) {
                         rayTraceLine(y);
