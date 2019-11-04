@@ -1,6 +1,7 @@
 # Emerald - A simple ray tracer
 
-![Emerald](screenshots/scene1.png)
+![Emerald 0.5](screenshots/scene2.png)
+![Emerald 0.3](screenshots/scene1.png)
 
 ## Requirements
 - Dlang https://dlang.org/
