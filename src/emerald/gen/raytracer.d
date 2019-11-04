@@ -9,7 +9,7 @@ enum ACCELERATION_STRUCTURE = AccelerationStructure.BVH;
 final class RayTracer {
 private:
     enum PARALLEL       = true;
-    enum MAX_THREADS    = 3;    // if PARALLEL == true
+    enum MAX_THREADS    = 8;    // if PARALLEL == true
     enum SAMPS          = 1;
     enum INV_SAMPS      = 1.0/SAMPS;
     enum MAX_DEPTH      = 9;    // min=3, smallpt uses ~5
@@ -165,7 +165,7 @@ public:
         auto obj = ii.shape;
         auto mat = obj.getMaterial();
 
-        if(depth++==MAX_DEPTH || getRandom() >= mat.maxReflectance) {
+        if(depth++==MAX_DEPTH || getRandomFloat() >= mat.maxReflectance) {
             return mat.emission;
         }
 
@@ -195,13 +195,25 @@ public:
         }
         // Ideal DIFFUSE reflection
         float3 _diffuse() {
-            float r1  = 2*PI*getRandom();
-            float r2  = getRandom();
-            float r2s = sqrt(r2);
+            auto r1 = getRandom();
+            auto r2 = getRandom();
+
             float3 w  = nl;
             float3 u  = ((fabs(w.x)>0.1 ? float3(0,1,0) : float3(1,0,0)).cross(w)).normalised();
             float3 v  = w.cross(u);
-            float3 d  = u*cos(r1)*r2s + v*sin(r1)*r2s + w*sqrt(1-r2);
+            float3 d  = u*r1.cos2PIRand*r2.sqrtRand +
+                        v*r1.sin2PIRand*r2.sqrtRand +
+                        w*r2.sqrt_1_sub_rand;
+
+            // float r1  = 2*PI*getRandomFloat();
+            // float r2  = getRandomFloat();
+            // float r2s = sqrt(r2);
+            // float3 w  = nl;
+            // float3 u  = ((fabs(w.x)>0.1 ? float3(0,1,0) : float3(1,0,0)).cross(w)).normalised();
+            // float3 v  = w.cross(u);
+            // float3 d  = u*cos(r1)*r2s +
+            //             v*sin(r1)*r2s +
+            //             w*sqrt(1-r2);
             d.normalise();
 
             Ray ray = Ray(intersectPoint,d);
@@ -235,7 +247,7 @@ public:
             // Russian roulette
             if(depth>2) {
                 float P = 0.25 + 0.5*Re;
-                if(getRandom()<P) {
+                if(getRandomFloat()<P) {
                     // reflect
                     return mat.emission + f*_reflect()*(Re/P);
                 }

@@ -21,6 +21,6 @@ float3 clampLo(float3 v) {
 
 float gamma(float x) {
     //enum p = 1.0/2.2; // original value
-    enum p = 1.0/1.9;
+    enum p = 1.0/1.8;
     return pow(clamp(x), p);
 }

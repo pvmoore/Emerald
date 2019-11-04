@@ -13,7 +13,7 @@ public:
         this.rayTracer      = rayTracer;
         this.width          = width;
         this.height         = height;
-        this.screenshotId   = cast(uint)(getRandom()*100000);
+        this.screenshotId   = cast(uint)(getRandomFloat()*100000);
     }
     void takeSnapshot(ubyte[] pixels) {
         if(lastScreenShotIteration==rayTracer.getIterations()) return;
