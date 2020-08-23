@@ -58,10 +58,7 @@ public:
         }catch(Throwable t) {}
     }
     /// always called on the main thread
-    override void render(long frameNumber,
-                         long normalisedFrameNumber,
-                         float timeDelta)
-    {
+    override void render(ulong frameNumber, float seconds, float perSecond) {
         renderer.render();
     }
 private:

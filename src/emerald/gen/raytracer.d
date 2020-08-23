@@ -9,7 +9,7 @@ enum ACCELERATION_STRUCTURE = AccelerationStructure.BVH;
 final class RayTracer {
 private:
     enum PARALLEL       = true;
-    enum MAX_THREADS    = 8;    // if PARALLEL == true
+    enum MAX_THREADS    = 16;    // if PARALLEL == true
     enum SAMPS          = 1;
     enum INV_SAMPS      = 1.0/SAMPS;
     enum MAX_DEPTH      = 9;    // min=3, smallpt uses ~5
