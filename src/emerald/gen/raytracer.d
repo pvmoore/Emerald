@@ -9,10 +9,11 @@ enum ACCELERATION_STRUCTURE = AccelerationStructure.BVH;
 final class RayTracer {
 private:
     enum PARALLEL       = true;
+    enum SUPERSAMPLES   = 2;
     enum MAX_THREADS    = 16;    // if PARALLEL == true
     enum SAMPS          = 1;
     enum INV_SAMPS      = 1.0/SAMPS;
-    enum MAX_DEPTH      = 9;    // min=3, smallpt uses ~5
+    enum MAX_DEPTH      = 5;    // min=3, smallpt uses ~5
     enum BLACK          = float3(0,0,0);
 
     Scene scene;
@@ -35,10 +36,12 @@ private:
     }
     Row[] rowData;
 public:
-    uint samplesPerPixel()  { return iterations*SAMPS*4; }
+    uint samplesPerPixel()  { return iterations*SAMPS*SUPERSAMPLES*SUPERSAMPLES; }
     double averageMegaSPP() { return iterations == 0 ? 0 : totalMegaSPP/iterations; }
     uint getIterations()    { return iterations; }
     uint getNumThreads()    { return numThreads; }
+    uint getMaxDepth()      { return MAX_DEPTH; }
+
     float3[] getColours()   {
         mutex.lock();
         scope(exit) mutex.unlock();
@@ -101,7 +104,7 @@ public:
             watch.stop();
             iterations++;
 
-            auto numSamples = width*height*SAMPS*4;
+            auto numSamples = width*height*SAMPS*SUPERSAMPLES*SUPERSAMPLES;
             auto seconds    = watch.peek().total!"nsecs"/1_000_000_000.0;
 
             megaSPP       = (numSamples/seconds)/1_000_000.0;
@@ -135,14 +138,15 @@ public:
         float3 colour = float3(0,0,0);
 
         /* 2x2 supersample */
-        for(int sy=0; sy<2; sy++) {
-            for(int sx=0; sx<2; sx++) {
+        enum INV = 1f / (SUPERSAMPLES*SUPERSAMPLES);
+        for(int sy=0; sy<SUPERSAMPLES; sy++) {
+            for(int sx=0; sx<SUPERSAMPLES; sx++) {
                 colour += sample(x, y, sx, sy);
             }
         }
-        rowData[y].colours[x] += (colour*0.25f);
+        rowData[y].colours[x] += (colour*INV);
     }
-    float3 sample(int x, int y, int sx, int sy) {
+    float3 sample(int x, int y, float sx, float sy) {
 
         float3 result = float3(0,0,0);
 
@@ -161,9 +165,8 @@ public:
             return BLACK;
         }
 
-        // we hit this object
-        auto obj = ii.shape;
-        auto mat = obj.getMaterial();
+        // we hit something
+        auto mat = ii.shape.getMaterial();
 
         if(depth++==MAX_DEPTH || getRandomFloat() >= mat.maxReflectance) {
             return mat.emission;
@@ -176,7 +179,7 @@ public:
         float3 f;
 
         if(mat.texture) {
-            auto col = mat.texture.sample(obj.toUV(ii.hitPoint));
+            auto col = mat.texture.sample(ii.getUV());
             f = col * mat.colour;
         } else {
             f = mat.normalisedColour;

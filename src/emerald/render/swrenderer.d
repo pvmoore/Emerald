@@ -33,9 +33,12 @@ public:
     void render() {
         if(updatePixels()) {
 
-            auto title = "Emerald %s  [iteration: %s, samples per pixel: %s, samples per sec: %.3s million, threads: %s]"
-                .format(VERSION, rayTracer.getIterations(),
-                    rayTracer.samplesPerPixel(), rayTracer.averageMegaSPP(),
+            auto title = "Emerald %s [Max depth %s, iteration: %s, samples per pixel: %s, samples per sec: %.3s million, threads: %s]"
+                .format(VERSION,
+                    rayTracer.getMaxDepth(),
+                    rayTracer.getIterations(),
+                    rayTracer.samplesPerPixel(),
+                    rayTracer.averageMegaSPP(),
                     rayTracer.getNumThreads());
 
             gl.setWindowTitle(title);

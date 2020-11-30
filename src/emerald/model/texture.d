@@ -16,6 +16,8 @@ public:
      * top-left to bottom-right, 0.0 -> 1.0
      */
     float3 sample(float2 uv) {
+        // Restrict to 0.0 to 1.0 range
+        uv.fract();
 
         auto x = (uv.x * width).as!int;
         auto y = (uv.y * height).as!int;

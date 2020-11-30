@@ -6,11 +6,11 @@ final class Camera {
 public:
     float3 position;
     float3 direction;   // normalised
-    uint width;
-    uint height;
-    float oneDivWidth, oneDivHeight;
-    float3 cx;
-    float3 cy;
+    const uint width;
+    const uint height;
+    const float oneDivWidth, oneDivHeight;
+    const float3 cx;
+    const float3 cy;
 
     this(float3 position, float3 direction, uint width, uint height) {
         this.position     = position;
@@ -23,7 +23,7 @@ public:
         this.cy           = (cx.cross(this.direction)).normalised()*0.5135;
     }
 
-    Ray makeRay(int x, int y, int sx, int sy) {
+    Ray makeRay(int x, int y, float sx, float sy) {
         float dx = tentFilter.next();
         float dy = tentFilter.next();
 

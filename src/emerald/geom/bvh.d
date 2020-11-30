@@ -9,7 +9,6 @@ import emerald.all;
  */
 final class BVH : Shape {
 private:
-	__gshared static uint ids = 0;
     Shape left;
     Shape right;
 	AABB aabb;
@@ -21,9 +20,20 @@ private:
 public:
 	enum AxisStrategy { ROTATE, PICK_LONGEST }
 
-    override AABB getAABB() 		{ return aabb; }
-	override Material getMaterial() { assert(false); }
-	override float2 toUV(float3 hitPoint) { expect(false); assert(false); }
+    override AABB getAABB() {
+		return aabb;
+	}
+	override Material getMaterial() {
+		expect(false); assert(false);
+	}
+	override float2 getUV(IntersectInfo intersect) {
+		expect(false); assert(false);
+	}
+	override void recalculate() {
+		left.recalculate();
+		right.recalculate();
+		recalculateAABB();
+    }
 
 	static Shape build(Shape[] shapes,
 					   AxisStrategy axisStrategy = AxisStrategy.PICK_LONGEST,
@@ -70,7 +80,6 @@ public:
 	    if(!(aabb.intersect(r, t, tmin, ii.t))) {
 	        return false;
 	    }
-
         tmin = min(t, tmin);
 
 		/* Call hit on both branches to get the minimum intersection */
@@ -88,6 +97,10 @@ public:
 		return buf.data;
 	}
 private:
+	void recalculateAABB() {
+        this.aabb = left.getAABB();
+        aabb.enclose(right.getAABB());
+    }
     static uint qsplit(Shape[] list, float pivotVal, uint axis) {
         int retVal = 0;
         auto size  = list.length.as!uint;

@@ -4,7 +4,6 @@ import emerald.all;
 
 final class Sphere : Shape {
 private:
-    static __gshared uint ids = 0;
     float radiusSquared;
     AABB aabb;
     Material material;
@@ -19,9 +18,9 @@ public:
         this.radiusSquared  = radius*radius;
         this.radius         = radius;
         this.centre         = centre;
-        this.aabb           = AABB(centre-radius, centre+radius);
         this.material       = m;
         this.transformation = mat4.identity();
+        recalculate();
     }
     auto transform(mat4 t) {
         this.transformation = t;
@@ -31,15 +30,19 @@ public:
     override AABB getAABB()         { return aabb; }
     override Material getMaterial() { return material; }
 
+    override void recalculate() {
+        this.aabb = AABB(centre-radius, centre+radius);
+    }
+
     /**
      * Map 3D hit point on the sphere to 2D UV texture coordinates.
      */
-    override float2 toUV(float3 hitPoint) {
+    override float2 getUV(IntersectInfo intersect) {
         import std.math : asin, atan2, PI, PI_2;
         enum invPI  = 1.0 / PI;
         enum inv2PI = 1.0 / (PI*2);
 
-        auto normal = (hitPoint - centre).normalised();
+        auto normal = (intersect.hitPoint - centre).normalised();
 
         auto t = float4(normal,0) * transformation;
 

@@ -4,6 +4,8 @@ version(Win64) {} else { static assert(false); }
 
 public:
 
+@fastmath:
+
 version(LDC) {
     import ldc.attributes : fastmath;
 } else {
@@ -11,7 +13,7 @@ version(LDC) {
 }
 
 import logging   : log, flushLog;
-import common    : as, expect, From;
+import common    : as, expect, From, todo;
 import resources : Image, BMP, PNG;
 import maths     : AABB,
                    Angle,
@@ -22,6 +24,7 @@ import maths     : AABB,
                    Ray,
                    TentFilter,
                    degrees,
+                   radians,
                    float2,
                    float3,
                    float4,
@@ -54,10 +57,12 @@ import emerald.version_;
 
 import emerald.gen.raytracer;
 
+import emerald.geom.box;
 import emerald.geom.bvh;
 import emerald.geom.intersect_info;
 import emerald.geom.shape;
 import emerald.geom.sphere;
+import emerald.geom.triangle;
 
 import emerald.model.camera;
 import emerald.model.material;
