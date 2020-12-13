@@ -27,7 +27,7 @@ public:
         gl.showWindow(true);
     }
     void initialise() {
-        this.scene        = new Scene(WIDTH, HEIGHT);
+        this.scene        = new ManySpheres(WIDTH, HEIGHT).initialise();
         this.rayTracer    = new RayTracer(scene, WIDTH, HEIGHT);
         this.renderer     = new SWRenderer(gl, rayTracer, WIDTH,HEIGHT);
         this.photographer = new Photographer(rayTracer, WIDTH, HEIGHT);

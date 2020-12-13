@@ -66,8 +66,10 @@ import emerald.geom.triangle;
 
 import emerald.model.camera;
 import emerald.model.material;
-import emerald.model.scene;
 import emerald.model.texture;
+
+import emerald.scenes.scene;
+import emerald.scenes.ManySpheres;
 
 import emerald.util.random;
 import emerald.util.util;

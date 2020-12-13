@@ -22,14 +22,17 @@ import emerald.all;
  *  +----+
  *  1    0
  */
+
 final class Triangle : Shape {
 private:
     AABB aabb;
     Material material;
+    bool swapUV;
+//align(16):
     float3 p0, p1, p2;
     float3 normal;
     float2 uvMin, uvRange, uvScale;
-    bool swapUV;
+
     // Computed values
     float3 p0p1;// = p0 - p1;
     float3 p0p2;// = p0 - p2;
@@ -110,6 +113,9 @@ public:
         if(v<=0 || u+v >= 1) return false;
 
         auto t = f * edge2.dot(q);
+
+        // return true here in asm
+        // or just return a,u,v,t and resolve in D code
 
         if(t >= tmin && t < ii.t) {
             ii.t        = t;

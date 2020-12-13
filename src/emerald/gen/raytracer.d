@@ -17,6 +17,7 @@ private:
     enum BLACK          = float3(0,0,0);
 
     Scene scene;
+    Camera camera;
     uint width, height;
 
     float3[] colours;
@@ -51,6 +52,7 @@ public:
 
     this(Scene scene, uint width, uint height) {
         this.scene               = scene;
+        this.camera              = scene.getCamera();
         this.width               = width;
         this.height              = height;
         this.mutex               = new Mutex;
@@ -151,7 +153,7 @@ public:
         float3 result = float3(0,0,0);
 
         for(auto s=0; s<SAMPS; s++) {
-            auto ray = scene.camera.makeRay(x,y, sx,sy);
+            auto ray = camera.makeRay(x,y, sx,sy);
             result += clampLo(radiance(ray, y, 0));
         }
 
@@ -263,8 +265,9 @@ public:
             return mat.emission + f*_reflect()*Re + radiance(ray, row, depth)*Tr;
         }
 
-        float3 col;
+        float3 col   = float3(0,0,0);
         float factor = 0;
+
         if(mat.isReflective) {
             col    += _specular()*mat.reflectance;
             factor += mat.reflectance;
@@ -284,12 +287,12 @@ public:
 
         static if(ACCELERATION_STRUCTURE==AccelerationStructure.NONE) {
             // 1.15
-            foreach(shape; scene.shapes) {
+            foreach(shape; scene.getShapes()) {
                 shape.intersect(r, ii);
             }
         } else static if(ACCELERATION_STRUCTURE==AccelerationStructure.BVH) {
             // 1.6
-            scene.bvh.intersect(r, ii);
+            scene.getBVH().intersect(r, ii);
         } else static if(ACCELERATION_STRUCTURE==AccelerationStructure.BIH) {
             //
             static assert(false);

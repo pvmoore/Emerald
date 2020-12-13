@@ -17,8 +17,9 @@ enum VERSION = "0.7";
  * TODO
  * ##################################################################
  * - Create a bubble sphere with eta=1 (same as air)
+ * - Add a skybox (for an outdoor scene)
+ *
+ * - Use triangles instead of spheres for the walls. Is this faster?
  * - Rewrite so that it is 'forward' eg. it does not spawn function calls recursively.
- * - Add a skybox
- *
- *
+ * - Rewrite inner functions
  */
