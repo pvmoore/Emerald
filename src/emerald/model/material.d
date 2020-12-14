@@ -25,7 +25,6 @@ final class Material {
 
     Texture texture;
 
-    float diffusePower   = 0;
     float reflectance    = 0;
     float refractIndex   = 0;
     float maxReflectance = 1;
@@ -34,11 +33,10 @@ final class Material {
     bool isReflective;
     bool isRefractive;
 
-    static Material diffuse(float3 c, float power=1) {
+    static Material diffuse(float3 c) {
         Material m       = new Material();
         m.c(c);
         m.isDiffuse      = true;
-        m.diffusePower   = power;
         return m;
     }
     static Material light(float3 emission) {

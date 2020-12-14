@@ -110,7 +110,7 @@ public:
 
         new Sphere(18,      float3(103,22,60),  Material.diffuse(float3(1.0, 1.0, 1.0))
                                                         .tex(redWhiteTex)
-                                                        .refl(1))
+                                                        .refl(0.5))
                                                         .transform(rotXYZ),
 
 

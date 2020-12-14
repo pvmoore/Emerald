@@ -142,7 +142,7 @@ protected:
         new Sphere(8,		float3(50,30,50),			Material.refract(2.419)),
 
         // diffuse yellow glass
-        new Sphere(8,		float3(-10,50,50),			Material.diffuse(float3(1,0.7,0.2),0.25).refr(1.5)),
+        new Sphere(8,		float3(-10,50,50),			Material.diffuse(float3(1,0.7,0.2)).refr(1.5)),
 
 
         // Top light

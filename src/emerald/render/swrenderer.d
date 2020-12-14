@@ -10,7 +10,7 @@ private:
     uint height;
     OpenGL gl;
 
-    RayTracer rayTracer;
+    AbstractRayTracer rayTracer;
     PixelBuffer pixels;
     int pixelsIteration = -1;
 public:
@@ -18,7 +18,7 @@ public:
         return pixels.getRGBData();
     }
 
-    this(OpenGL gl, RayTracer rayTracer, uint width, uint height) {
+    this(OpenGL gl, AbstractRayTracer rayTracer, uint width, uint height) {
         this.gl         = gl;
         this.rayTracer  = rayTracer;
         this.width      = width;

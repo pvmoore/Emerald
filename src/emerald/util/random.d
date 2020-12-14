@@ -38,6 +38,9 @@ struct Random {
     float cos2PIRand;       // cos(_2_PI_rand)
 }
 
+/**
+ *  Generates and stores random numbers between 0.0 and 1.0
+ */
 final class RandomNumbers {
 private:
     Random[] values;

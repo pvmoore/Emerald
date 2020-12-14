@@ -55,7 +55,9 @@ import emerald.emerald;
 import emerald.photos;
 import emerald.version_;
 
-import emerald.gen.raytracer;
+import emerald.gen.AbstractRayTracer;
+import emerald.gen.LoopRayTracer;
+import emerald.gen.RecursiveRayTracer;
 
 import emerald.geom.box;
 import emerald.geom.bvh;

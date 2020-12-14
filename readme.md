@@ -6,3 +6,7 @@
 
 ## Requirements
 - Dlang https://dlang.org/
+
+## Initial code adapted from smallpt by Kevin Beason
+
+https://www.kevinbeason.com/smallpt/

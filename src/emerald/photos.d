@@ -4,12 +4,12 @@ import emerald.all;
 
 final class Photographer {
 private:
-    RayTracer rayTracer;
+    AbstractRayTracer rayTracer;
     uint width, height;
     int lastScreenShotIteration = -1;
     uint screenshotId;
 public:
-    this(RayTracer rayTracer, uint width, uint height) {
+    this(AbstractRayTracer rayTracer, uint width, uint height) {
         this.rayTracer      = rayTracer;
         this.width          = width;
         this.height         = height;

@@ -6,7 +6,7 @@ final class Emerald : ApplicationListenerAdapter {
 private:
     OpenGL gl;
     Scene scene;
-    RayTracer rayTracer;
+    AbstractRayTracer rayTracer;
     SWRenderer renderer;
     Photographer photographer;
 public:
@@ -28,7 +28,8 @@ public:
     }
     void initialise() {
         this.scene        = new ManySpheres(WIDTH, HEIGHT).initialise();
-        this.rayTracer    = new RayTracer(scene, WIDTH, HEIGHT);
+        //this.rayTracer    = new RecursiveRayTracer(scene, WIDTH, HEIGHT);
+        this.rayTracer    = new LoopRayTracer(scene, WIDTH, HEIGHT);
         this.renderer     = new SWRenderer(gl, rayTracer, WIDTH,HEIGHT);
         this.photographer = new Photographer(rayTracer, WIDTH, HEIGHT);
     }
