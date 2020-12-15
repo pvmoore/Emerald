@@ -38,7 +38,7 @@ public:
     }
     void createScene() {
 
-        addlargeRoom();
+        addlargeRoomUsingRectangles();
 
         mat4 rotY = mat4.rotateY((-45).degrees);
         mat4 rotZ = mat4.rotateZ((-60).degrees);

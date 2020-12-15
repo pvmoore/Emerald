@@ -25,17 +25,16 @@ import emerald.all;
 
 final class Triangle : Shape {
 private:
-    AABB aabb;
     Material material;
     bool swapUV;
-//align(16):
     float3 p0, p1, p2;
-    float3 normal;
     float2 uvMin, uvRange, uvScale;
 
     // Computed values
-    float3 p0p1;// = p0 - p1;
-    float3 p0p2;// = p0 - p2;
+    AABB aabb;
+    float3 edge1;
+    float3 edge2;
+    float3 normal;
 public:
     uint id;
 
@@ -49,6 +48,7 @@ public:
         this.uvRange    = float2(1,1);
         this.uvScale    = float2(1,1);
         this.swapUV     = false;
+
         recalculate();
     }
     auto transform(mat4 t) {
@@ -82,6 +82,8 @@ public:
     override void recalculate() {
         this.normal = (p1-p0).cross(p2-p0).normalised();
         this.aabb   = AABB(p0, p1, p2);
+        this.edge1  = p1 - p0;
+        this.edge2  = p2 - p0;
     }
     override AABB getAABB() {
         return aabb;
@@ -96,14 +98,19 @@ public:
      *  https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
      */
     override bool intersect(ref Ray r, IntersectInfo ii, float tmin) {
-        enum E     = 0.00001f;
-        auto edge1 = p1 - p0;
-        auto edge2 = p2 - p0;
-        auto h     = r.direction.cross(edge2);
-        auto a     = edge1.dot(h);
+        float t;
+	    if(!(aabb.intersect(r, t, tmin, ii.t))) {
+	        return false;
+	    }
+        tmin = min(t, tmin);
+
+        enum E = 0.00001f;
+        auto h = r.direction.cross(edge2);
+        auto a = edge1.dot(h);
+        // Exit if the ray is parallel to the triangle
         if(a >= -E && a <= E) return false;
 
-        auto f = 1f / a;
+        auto f = 1 / a;
         auto s = r.origin - p0;
         auto u = f * s.dot(h);
         if(u <= 0 || u >= 1) return false;
@@ -112,10 +119,7 @@ public:
         auto v = f * r.direction.dot(q);
         if(v<=0 || u+v >= 1) return false;
 
-        auto t = f * edge2.dot(q);
-
-        // return true here in asm
-        // or just return a,u,v,t and resolve in D code
+        t = f * edge2.dot(q);
 
         if(t >= tmin && t < ii.t) {
             ii.t        = t;
@@ -128,66 +132,11 @@ public:
 
 		return false;
     }
-/*
-    override bool intersect(ref Ray r, IntersectInfo ii, float tmin) {
-        float A = p0.x - p1.x;
-		float B = p0.y - p1.y;
-		float C = p0.z - p1.z;
-		float D = p0.x - p2.x;
-		float E = p0.y - p2.y;
-		float F = p0.z - p2.z;
-
-        float J = p0.x - r.origin.x;
-		float K = p0.y - r.origin.y;
-		float L = p0.z - r.origin.z;
-
-		float G = r.direction.x;
-		float H = r.direction.y;
-		float I = r.direction.z;
-
-        // float3 JKL = p0 - r.origin;
-        // float3 GHI = r.direction;
-
-		float EIHF = E*I - F*H;
-		float GFDI = F*G - D*I;
-		float DHEG = D*H - E*G;
-
-		float AKJB = A*K - J*B;
-		float JCAL = C*J - L*A;
-		float BLKC = B*L - K*C;
-
-		float denom = (A*EIHF + B*GFDI + C*DHEG);
-		float denomReciprocal = 1f / denom;
-
-		float u = (J*EIHF + K*GFDI + L*DHEG) * denomReciprocal;
-
-		if(u <= 0 || u >= 1) return false;
-
-		float v = (I*AKJB + H*JCAL + G*BLKC) * denomReciprocal;
-
-		if(v <= 0 || u + v >= 1) return false;
-
-		float M = -(F*AKJB + E*JCAL + D*BLKC);
-		float t = M * denomReciprocal;
-
-        if(t >= tmin && t < ii.t) {
-            ii.t        = t;
-			ii.hitPoint = r.origin + r.direction*t;
-			ii.normal   = normal;
-            ii.uv       = calculateUV(u, v);
-			ii.shape    = this;
-            return true;
-        }
-
-		return false;
-    }
-    */
     override string dump(string padding) {
 		return "%sTriangle(%s)".format(padding, aabb);
     }
 private:
     float2 calculateUV(float u, float v) {
-
         float2 uv = float2(u,v);
         if(swapUV) {
             uv = float2(1,1) - uv;

@@ -91,7 +91,7 @@ public:
 	    }
         tmin = min(t, tmin);
 
-        /* Call hit on all triangles to get the minimum intersection */
+        /* Call intersect on all triangles to get the minimum intersection */
         bool hit = false;
         foreach(tri; triangles) {
             hit |= tri.intersect(r, ii, tmin);

@@ -62,6 +62,7 @@ import emerald.gen.RecursiveRayTracer;
 import emerald.geom.box;
 import emerald.geom.bvh;
 import emerald.geom.intersect_info;
+import emerald.geom.Rectangle;
 import emerald.geom.shape;
 import emerald.geom.sphere;
 import emerald.geom.triangle;

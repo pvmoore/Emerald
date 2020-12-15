@@ -17,12 +17,12 @@ protected:
 
         while(true) {
             if(!intersectRayWithWorld(r, ii)) {
-                // if miss, return current colour
+                // If miss, return current colour
                 // TODO - use a skybox if supplied
                 return colour;
             }
 
-            // we hit something
+            // We hit something
             auto mat = ii.shape.getMaterial();
 
             // Add some light

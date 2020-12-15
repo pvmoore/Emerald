@@ -47,7 +47,48 @@ protected:
     //     new Sphere(600,	    float3(50,681.6-.27,81.6),	LIGHT)
     //     ];
     // }
-    void addlargeRoom() {
+    void addlargeRoomUsingRectangles() {
+        // left
+        shapes ~= new Rectangle(Material.diffuse(float3(.75,.25,.25)))
+            .rotate(0.degrees, 0.degrees, 90.degrees)
+            .scale(float3(300,300,300))
+            .translate(float3(-30,0,0))
+            .build();
+        // right
+        shapes ~= new Rectangle(Material.diffuse(float3(.25,.25,.75)))
+            .rotate(0.degrees, 0.degrees, 90.degrees)
+            .scale(float3(300,300,300))
+            .translate(float3(130,0,0))
+            .build();
+
+        // floor
+        shapes ~= new Rectangle(Material.diffuse(float3(.75,.75,.75)))
+            .rotate(0.degrees, 0.degrees, 0.degrees)
+            .scale(float3(500,500,500))
+            .translate(float3(0,0,0))
+            .build();
+        // ceiling
+        shapes ~= new Rectangle(Material.diffuse(float3(.75,.75,.75)))
+            .rotate(0.degrees, 0.degrees, 0.degrees)
+            .scale(float3(500,500,500))
+            .translate(float3(0,81.6,0))
+            .build();
+
+        // back
+        shapes ~= new Rectangle(Material.diffuse(float3(.25,.75,.25)))
+            .rotate(90.degrees, 0.degrees, 0.degrees)
+            .scale(float3(500,500,500))
+            .translate(float3(0,0,-7))
+            .build();
+        // front (behind camera)
+        shapes ~= new Rectangle(Material.diffuse(float3(0,0,0)))
+            .rotate(90.degrees, 0.degrees, 0.degrees)
+            .scale(float3(500,500,500))
+            .translate(float3(0,0,170))
+            .build();
+    }
+
+    void addlargeRoomUsingSpheres() {
         shapes ~= [
         //         radius,  position,                   material
         new Sphere(1e4,		float3(1e4-30,40.8,81.6),	Material.diffuse(float3(.75,.25,.25))),//Left
@@ -75,7 +116,7 @@ protected:
         ];
     }
     void scene2() {
-        addlargeRoom();
+        addlargeRoomUsingSpheres();
         shapes ~= [
         //          radius, position,               material
         // mirror balls
@@ -123,7 +164,7 @@ protected:
         ];
     }
     void scene3() {
-        addlargeRoom();
+        addlargeRoomUsingSpheres();
         shapes ~= [
         //         radius,  position,                   material
         // specular diffuse
@@ -150,7 +191,7 @@ protected:
         ];
     }
     void manyBallScene() {
-        addlargeRoom();
+        addlargeRoomUsingSpheres();
         shapes ~= [
         //                  radius,  position,                  material
         new Sphere(10,		float3( 0,10,45),			Material.diffuse(float3(1,0.8,0.3))),
