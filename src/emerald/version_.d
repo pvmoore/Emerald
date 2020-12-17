@@ -8,6 +8,7 @@ enum VERSION = "0.9";
  * ##################################################################
  *
  * 0.9 - Add Rectangle
+ *     - Add TriangleMesh
  *     - Modify ManySpheres scene to use rectangles for the walls instead of spheres.
  * 0.8 - Rewrite ray trace radiance method so that it does not recurse.
  * 0.7 - Change max depth to 5 (instead of 9)
@@ -20,6 +21,8 @@ enum VERSION = "0.9";
  * TODO
  * ##################################################################
  * - Create a bubble sphere with eta=1 (same as air)
- * - Add a skybox (for an outdoor scene)
- * - Use triangles instead of spheres for the walls. Is this faster?
+ * - Add a skybox (and add an outdoor scene to demonstrate it)
+ *
+ * - Convert to vulkan
+ * - Add vulkan compute shader version (or fragment shader)
  */

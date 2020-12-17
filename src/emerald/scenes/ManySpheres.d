@@ -16,8 +16,8 @@ private:
 public:
     this(uint width, uint height) {
         super(new Camera(
-            float3(50,52,295.6),        // origin
-            float3(0,-0.042612, -1),    // direction
+            float3(50, 52, 295.6),      // origin
+            float3(0, -0.042612, -1),   // direction
             width,
             height
         ));
@@ -54,13 +54,12 @@ public:
         mat4 brickTrans = Ym45 * rotY;
         mat4 earthTrans = mat4.rotateY((-90).degrees);
 
-        auto glass = Material.refract(1.333);
+        auto glass = Material.refract(1.52);
         auto red   = Material.diffuse(float3(1,1,1)).tex(brickTex);
         auto green = Material.diffuse(float3(0,1,0));
         auto blue = Material.diffuse(float3(0,0,1));
         auto white = Material.diffuse(float3(1,1,1));//.tex(uvsTex);
 
-        //addBox(float3(8,  12.2, 88), float3(16,16,16), red);
         with(Box.Side) {
             shapes ~= new Box()
                 .setUVScale(float2(0.25, 0.25))

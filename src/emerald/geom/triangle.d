@@ -28,7 +28,9 @@ private:
     Material material;
     bool swapUV;
     float3 p0, p1, p2;
+    float3 n0, n1, n2;
     float2 uvMin, uvRange, uvScale;
+    bool hasVertexNormals;
 
     // Computed values
     AABB aabb;
@@ -51,10 +53,20 @@ public:
 
         recalculate();
     }
+    auto normals(float3 n0, float3 n1, float3 n2) {
+        this.n0 = n0; this.n1 = n1; this.n2 = n2;
+        this.hasVertexNormals = true;
+        return this;
+    }
     auto transform(mat4 t) {
         this.p0 = (t * float4(p0,1)).xyz;
         this.p1 = (t * float4(p1,1)).xyz;
         this.p2 = (t * float4(p2,1)).xyz;
+        if(hasVertexNormals) {
+            this.n0 = (t * float4(n0,0)).xyz;
+            this.n1 = (t * float4(n1,0)).xyz;
+            this.n2 = (t * float4(n2,0)).xyz;
+        }
         recalculate();
         return this;
     }
@@ -124,7 +136,7 @@ public:
         if(t >= tmin && t < ii.t) {
             ii.t        = t;
 			ii.hitPoint = r.origin + r.direction*t;
-			ii.normal   = normal;
+			ii.normal   = getNormal(u, v);
             ii.uv       = calculateUV(u, v);
 			ii.shape    = this;
             return true;
@@ -146,5 +158,25 @@ private:
         uv *= uvRange;
         uv += uvMin;
         return uv;
+    }
+    float3 getNormal(float u, float v) {
+        if(hasVertexNormals) {
+            //
+            // +----+ u
+            // |   /
+            // |  /
+            // | /
+            // |/
+            // +
+            // v
+            float p0Dist = 1 - (u+v);
+            float p1Dist = u;
+            float p2Dist = v;
+
+            return (n0 * p0Dist +
+                    n1 * p1Dist +
+                    n2 * p2Dist).normalised();
+        }
+        return normal;
     }
 }

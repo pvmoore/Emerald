@@ -14,7 +14,7 @@ version(LDC) {
 
 import logging   : log, flushLog;
 import common    : as, expect, From, todo;
-import resources : Image, BMP, PNG;
+import resources : Image, BMP, PNG, Obj, ModelData;
 import maths     : AABB,
                    Angle,
                    clamp,
@@ -66,12 +66,20 @@ import emerald.geom.Rectangle;
 import emerald.geom.shape;
 import emerald.geom.sphere;
 import emerald.geom.triangle;
+import emerald.geom.TriangleMesh;
 
 import emerald.model.camera;
 import emerald.model.material;
 import emerald.model.texture;
 
+import emerald.scenes.CornellBox;
+import emerald.scenes.OneSphere;
+import emerald.scenes.RefractionScene;
 import emerald.scenes.scene;
+import emerald.scenes.Scene2;
+import emerald.scenes.Scene3;
+import emerald.scenes.Scene4;
+import emerald.scenes.SuzanneScene;
 import emerald.scenes.ManySpheres;
 
 import emerald.util.random;

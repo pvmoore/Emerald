@@ -12,8 +12,8 @@ public:
 protected:
     override float3 radiance(ref Ray r, uint row, uint depth) {
         auto ii          = rowData[row].ii;
-        auto colour      = float3(0,0,0);
-        auto reflectance = float3(1,1,1);
+        auto colour      = BLACK;
+        auto reflectance = WHITE;
 
         while(true) {
             if(!intersectRayWithWorld(r, ii)) {
@@ -95,7 +95,7 @@ protected:
                 const r2 = getRandom();
 
                 const w  = nl;
-                const u  = ((fabs(w.x)>0.1 ? float3(0,1,0) : float3(1,0,0)).cross(w)).normalised();
+                const u  = ((fabs(w.x)>0.1 ? Y_DIR : X_DIR).cross(w)).normalised();
                 const v  = w.cross(u);
                 const d  = u*r1.cos2PIRand*r2.sqrtRand +
                             v*r1.sin2PIRand*r2.sqrtRand +

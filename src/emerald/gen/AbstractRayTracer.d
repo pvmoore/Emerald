@@ -15,6 +15,9 @@ protected:
     enum INV_SAMPS      = 1.0/SAMPS;
     enum MAX_DEPTH      = 5;    // min=3, smallpt uses ~5
     enum BLACK          = float3(0,0,0);
+    enum WHITE          = float3(1,1,1);
+    enum Y_DIR          = float3(0,1,0);
+    enum X_DIR          = float3(1,0,0);
 
     Scene scene;
     Camera camera;
@@ -137,7 +140,7 @@ public:
         }
     }
     final void rayTracePixel(int x, int y) {
-        float3 colour = float3(0,0,0);
+        float3 colour = BLACK;
 
         /* 2x2 supersample */
         enum INV = 1f / (SUPERSAMPLES*SUPERSAMPLES);
@@ -150,7 +153,7 @@ public:
     }
     final float3 sample(int x, int y, float sx, float sy) {
 
-        float3 result = float3(0,0,0);
+        float3 result = BLACK;
 
         for(auto s=0; s<SAMPS; s++) {
             auto ray = camera.makeRay(x,y, sx,sy);
@@ -163,15 +166,12 @@ public:
         ii.reset();
 
         static if(ACCELERATION_STRUCTURE==AccelerationStructure.NONE) {
-            // 1.15
             foreach(shape; scene.getShapes()) {
                 shape.intersect(r, ii);
             }
         } else static if(ACCELERATION_STRUCTURE==AccelerationStructure.BVH) {
-            // 1.6
             scene.getBVH().intersect(r, ii);
         } else static if(ACCELERATION_STRUCTURE==AccelerationStructure.BIH) {
-            //
             static assert(false);
         } else {
             static assert(false);
