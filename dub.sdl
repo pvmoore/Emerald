@@ -16,6 +16,7 @@ buildType "release" {
 
 	buildOptions "releaseMode" "optimize" "inline" "noBoundsCheck"
 }
+
 configuration "test" {
 	#mainSourceFile "src/main.d"
     targetType "executable"
@@ -25,4 +26,4 @@ configuration "test" {
 dependency "logging" version="~master"
 dependency "common" version="~master"
 dependency "resources" version="~master"
-dependency "opengl3" version="~master"
+dependency "vulkan" version="~master"

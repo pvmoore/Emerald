@@ -1,4 +1,4 @@
-# Emerald - A simple ray tracer
+# Emerald - A simple path tracer
 
 ![Emerald 0.9](screenshots/suzanne1.png)
 ![Emerald 0.7](screenshots/v0.7.png)

@@ -1,0 +1,153 @@
+module emerald.render.vkrenderer;
+
+import emerald.all;
+import vulkan;
+
+final class VkRenderer {
+private:
+    const uint width;
+    const uint height;
+    int pixelsIteration = -1;
+
+    @Borrowed Vulkan vk;
+    @Borrowed VkDevice device;
+    @Borrowed VulkanContext context;
+    @Borrowed AbstractRayTracer rayTracer;
+
+    Camera2D camera;
+    VkSampler sampler;
+    UpdateableImage!(VFormat.R8G8B8A8_UNORM) pixels;
+    Quad quad;
+public:
+    this(VulkanContext context, AbstractRayTracer rayTracer, uint width, uint height) {
+        this.context   = context;
+        this.vk        = context.vk;
+        this.device    = context.device;
+        this.rayTracer = rayTracer;
+        this.width     = width;
+        this.height    = height;
+
+        initialise();
+    }
+    void destroy() {
+        if(quad) quad.destroy();
+        if(pixels) pixels.destroy();
+        if(sampler) device.destroySampler(sampler);
+	}
+    ubyte[] getPixelData() {
+        ubyte[] tempData = new ubyte[width*height*3];
+        RGBAb* src = pixels.map();
+        RGBb* dest = cast(RGBb*)tempData.ptr;
+
+        foreach(i; 0..width*height) {
+            dest[i].r = src[i].r;
+            dest[i].g = src[i].g;
+            dest[i].b = src[i].b;
+        }
+
+        return tempData;
+    }
+    void render(Frame frame) {
+        auto res = frame.resource;
+	    auto b = res.adhocCB;
+	    b.beginOneTimeSubmit();
+
+        if(updatePixels()) {
+
+            auto title = "Emerald %s [Max depth %s, iteration: %s, samples per pixel: %s, samples per sec: %.3s million, threads: %s]"
+                .format(VERSION,
+                    rayTracer.getMaxDepth(),
+                    rayTracer.getIterations(),
+                    rayTracer.samplesPerPixel(),
+                    rayTracer.averageMegaSPP(),
+                    rayTracer.getNumThreads());
+
+            context.vk.setWindowTitle(title);
+
+            pixels.upload(b);
+        }
+
+        // begin the render pass
+        b.beginRenderPass(
+            context.renderPass,
+            res.frameBuffer,
+            toVkRect2D(0,0, vk.windowSize.toVkExtent2D),
+            [ clearColour(0.2f,0,0,1) ],
+            VSubpassContents.INLINE
+            //VSubpassContents.SECONDARY_COMMAND_BUFFERS
+        );
+
+        quad.insideRenderPass(frame);
+
+        b.endRenderPass();
+        b.end();
+
+        /// Submit our render buffer
+        vk.getGraphicsQueue().submit(
+            [b],
+            [res.imageAvailable],
+            [VPipelineStage.COLOR_ATTACHMENT_OUTPUT],
+            [res.renderFinished],  // signal semaphores
+            res.fence              // fence
+        );
+    }
+private:
+    void initialise() {
+        this.camera = Camera2D.forVulkan(vk.windowSize);
+
+        createSampler();
+        createUpdateableImage();
+        createQuad();
+    }
+    void createSampler() {
+        this.sampler = device.createSampler(samplerCreateInfo());
+    }
+    void createUpdateableImage() {
+        this.pixels = new UpdateableImage!(VFormat.R8G8B8A8_UNORM)
+            (context, width, height, VImageUsage.SAMPLED, VImageLayout.SHADER_READ_ONLY_OPTIMAL);
+
+        this.pixels
+            .image.createView(VFormat.R8G8B8A8_UNORM, VImageViewType._2D, VImageAspect.COLOR);
+
+        this.pixels.clear(RGBAb(0,0,0,255));
+    }
+    void createQuad() {
+        this.quad = new Quad(context, pixels.getImageMeta(), sampler);
+        auto scale = mat4.scale(float3(width,height,0));
+        auto trans = mat4.translate(float3(0,0,0));
+        quad.setVP(trans*scale, camera.V, camera.P);
+    }
+    bool updatePixels() {
+        auto iteration = rayTracer.getIterations();
+
+        if(iteration < 1) return false;
+        if(iteration == pixelsIteration) return false;
+
+        this.pixelsIteration = iteration;
+        auto colours = rayTracer.getColours();
+
+        float3* src = colours.ptr;
+
+        // Swap the Y
+
+        void _copyLine(RGBAb* dest) {
+            for(auto x=0; x<width; x++) {
+                dest[x].r = cast(ubyte)(255 * gamma(src.x));
+                dest[x].g = cast(ubyte)(255 * gamma(src.y));
+                dest[x].b = cast(ubyte)(255 * gamma(src.z));
+                src++;
+            }
+        }
+
+        RGBAb* dest = pixels.map() + (height-1) * width;
+
+        for(auto y=0; y<height; y++) {
+            _copyLine(dest);
+            dest -= width;
+        }
+
+        pixels.setDirty();
+
+        return true;
+    }
+}

@@ -12,8 +12,8 @@ version(LDC) {
     struct fastmath {}
 }
 
-import logging   : log, flushLog;
-import common    : as, expect, From, todo;
+import logging   : log, flushLog, setEagerFlushing;
+import common    : as, Borrowed, expect, From, todo;
 import resources : Image, BMP, PNG, Obj, ModelData;
 import maths     : AABB,
                    Angle,
@@ -32,10 +32,6 @@ import maths     : AABB,
                    uint4,
                    max,
                    min;
-import gl        : ApplicationListenerAdapter,
-                   OpenGL,
-                   PixelBuffer;
-
 
 import core.sync.mutex          : Mutex;
 import core.thread              : Thread;
@@ -52,6 +48,7 @@ import std.parallelism          : parallel, defaultPoolThreads, totalCPUs;
 import std.math			        : pow, sqrt, PI, M_1_PI, fabs, cos, sin;
 
 import emerald.emerald;
+import emerald.EmeraldVK;
 import emerald.photos;
 import emerald.version_;
 
@@ -84,5 +81,4 @@ import emerald.scenes.ManySpheres;
 
 import emerald.util.random;
 import emerald.util.util;
-
-import emerald.render.swrenderer;
+import emerald.render.vkrenderer;

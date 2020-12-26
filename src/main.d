@@ -14,7 +14,11 @@ int WinMain(HINSTANCE theHInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, in
 	try{
 		Runtime.initialize();
 
-		app = new Emerald();
+		setEagerFlushing(true);
+
+		app = new EmeraldVK();
+
+		app.initialise();
 		app.run();
 	}catch(Throwable e) {
 		log("exception: %s", e.msg);
@@ -30,6 +34,6 @@ int WinMain(HINSTANCE theHInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, in
 
 void test() {
 	static if(true) {
-		
+
 	}
 }

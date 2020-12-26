@@ -26,16 +26,28 @@ public:
         // light
         shapes ~= new Sphere(600,	    float3(50,681.6-.27,81.6),	LIGHT);
 
-        shapes ~= new TriangleMesh("resources/suzanne.obj.txt", Material.diffuse(float3(1,1,1)))
+        shapes ~= new TriangleMesh("resources/models/suzanne.obj.txt", Material.diffuse(float3(1,1,1)))
             .scale(float3(28,28,28))
             .translate(float3(20,40,50))
             .rotate(0.degrees, 45.degrees, 0.degrees)
             .build();
 
-        shapes ~= new TriangleMesh("resources/suzanne.obj.txt", Material.diffuse(float3(1,1,1)), true)
+        // shapes ~= new TriangleMesh("resources/models/suzanne.obj.txt", Material.diffuse(float3(1,1,1)).refr(2))
+        //     .scale(float3(28.05,28.05,28.05))
+        //     .translate(float3(20,40,50))
+        //     .rotate(0.degrees, 45.degrees, 0.degrees)
+        //     .build();
+
+        shapes ~= new TriangleMesh("resources/models/suzanne.obj.txt", Material.diffuse(float3(1,1,1)), true)
             .scale(float3(28,28,28))
             .translate(float3(80,40,50))
             .rotate(0.degrees, (-45).degrees, 0.degrees)
             .build();
+
+        // shapes ~= new TriangleMesh("resources/models/suzanne.obj.txt", Material.diffuse(float3(1,1,1)).refr(1.6), true)
+        //     .scale(float3(28.05,28.05,28.05))
+        //     .translate(float3(80,40,50))
+        //     .rotate(0.degrees, (-45).degrees, 0.degrees)
+        //     .build();
     }
 }
