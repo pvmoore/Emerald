@@ -32,6 +32,7 @@ final class Material {
     bool isDiffuse;
     bool isReflective;
     bool isRefractive;
+    bool isEmissive;
 
     static Material diffuse(float3 c) {
         Material m       = new Material();
@@ -43,6 +44,7 @@ final class Material {
         Material m       = new Material();
         m.c(float3(0,0,0));
         m.emission       = emission;
+        m.isEmissive     = true;
         m.isDiffuse      = true;
         return m;
     }
@@ -66,7 +68,8 @@ final class Material {
         return this;
     }
     auto e(float3 emission) {
-        this.emission = emission;
+        this.emission   = emission;
+        this.isEmissive = true;
         return this;
     }
     auto refl(float r) {

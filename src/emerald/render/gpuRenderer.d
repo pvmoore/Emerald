@@ -1,0 +1,183 @@
+module emerald.render.gpuRenderer;
+
+import emerald.all;
+import vulkan;
+
+final class GPURenderer {
+private:
+    enum {
+        TEXT_0 = "Iterations ..... %s",
+        TEXT_1 = "Frame Iterations %s",
+        TEXT_2 = "Compute time ... %.2f ms"
+    }
+    @Borrowed Vulkan vk;
+    @Borrowed VkDevice device;
+    @Borrowed VulkanContext context;
+    @Borrowed GPUPathTracer pathTracer;
+    uint width;
+    uint height;
+    Camera2D camera;
+
+    VkSampler linearSampler;
+    Quad quad;
+    FPS fps;
+    Text text;
+public:
+    this(VulkanContext context, GPUPathTracer pathTracer, uint width, uint height) {
+        this.log("GPURenderer");
+        this.context = context;
+        this.vk = context.vk;
+        this.device = context.device;
+        this.pathTracer = pathTracer;
+        this.width = width;
+        this.height = height;
+        initialise();
+    }
+    void destroy() {
+        this.log("Destroy");
+        if(fps) fps.destroy();
+        if(quad) quad.destroy();
+        if(text) text.destroy();
+        if(linearSampler) device.destroySampler(linearSampler);
+    }
+    ubyte[] getPixelData() {
+        todo();
+        return null;
+    }
+    void render(Frame frame) {
+
+        text.replaceText(0, TEXT_0.format(pathTracer.getIterations()));
+        text.replaceText(1, TEXT_1.format(pathTracer.getCurrentImageIterations()));
+        text.replaceText(2, TEXT_2.format(pathTracer.getComputeTime() / 1_000_000.0));
+
+        auto computeFinished = pathTracer.compute(frame);
+
+        auto res = frame.resource;
+	    auto b = res.adhocCB;
+	    b.beginOneTimeSubmit();
+
+        fps.beforeRenderPass(frame, vk.getFPS());
+        text.beforeRenderPass(frame);
+
+        if(frame.number.value!=0) {
+            // acquire the image from compute queue and transform to fragment shader read
+            b.pipelineBarrier(
+                VPipelineStage.COMPUTE_SHADER,
+                VPipelineStage.FRAGMENT_SHADER,
+                0,      // dependency flags
+                null,   // memory barriers
+                null,   // buffer barriers
+                [
+                    imageMemoryBarrier(
+                        pathTracer.getTargetImage().handle,
+                        VAccess.SHADER_WRITE,
+                        VAccess.SHADER_READ,
+                        VImageLayout.GENERAL,
+                        VImageLayout.SHADER_READ_ONLY_OPTIMAL,
+                        vk.getComputeQueueFamily().index,
+                        vk.getGraphicsQueueFamily().index
+                    )
+                ]
+            );
+        }
+
+        // begin the render pass
+        b.beginRenderPass(
+            context.renderPass,
+            res.frameBuffer,
+            toVkRect2D(0,0, vk.windowSize.toVkExtent2D),
+            [ clearColour(0.2f,0,0,1) ],
+            VSubpassContents.INLINE
+            //VSubpassContents.SECONDARY_COMMAND_BUFFERS
+        );
+
+        quad.insideRenderPass(frame);
+        fps.insideRenderPass(frame);
+        text.insideRenderPass(frame);
+
+        b.endRenderPass();
+
+        // Release the targetImage
+        b.pipelineBarrier(
+            VPipelineStage.FRAGMENT_SHADER,
+            VPipelineStage.COMPUTE_SHADER,
+            0,      // dependency flags
+            null,   // memory barriers
+            null,   // buffer barriers
+            [
+                imageMemoryBarrier(
+                    pathTracer.getTargetImage().handle,
+                    VAccess.SHADER_READ,
+                    VAccess.SHADER_WRITE,
+                    VImageLayout.SHADER_READ_ONLY_OPTIMAL,
+                    VImageLayout.GENERAL,
+                    vk.getGraphicsQueueFamily().index,
+                    vk.getComputeQueueFamily().index
+                )
+            ]
+        );
+
+        b.end();
+
+        auto waitSemaphores = [
+            res.imageAvailable, computeFinished
+        ];
+        auto waitStages = [
+            VPipelineStage.COLOR_ATTACHMENT_OUTPUT, VPipelineStage.COMPUTE_SHADER
+        ];
+
+        /// Submit our render buffer
+        vk.getGraphicsQueue().submit(
+            [b],                   // commandBuffers
+            waitSemaphores,        // waitSemaphores
+            waitStages,            // waitStages
+            [res.renderFinished],  // signal semaphores
+            res.fence              // fence
+        );
+    }
+private:
+    void initialise() {
+        this.log("Initialise");
+        this.camera = Camera2D.forVulkan(vk.windowSize);
+
+        createSampler();
+        createQuad();
+        createFps();
+        createText();
+    }
+    void createSampler() {
+        this.linearSampler = device.createSampler(samplerCreateInfo());
+    }
+    void createFps() {
+        this.fps = new FPS(context, "comic-mono-bold")
+            .size(20)
+            .colour(WHITE);
+    }
+    void createText() {
+        this.text = new Text(context, context.fonts().get("comic-mono-bold"), true, 1000)
+            .setCamera(camera)
+            .setColour(WHITE)
+            .setSize(18)
+            .appendText(TEXT_0.format(0), 5, 5)
+            .appendText(TEXT_1.format(0), 5, 30)
+            .appendText(TEXT_2.format(0f), 5, 55);
+    }
+    void createQuad() {
+        ImageMeta m = {
+            image: pathTracer.getTargetImage(),
+            format: VFormat.B8G8R8A8_UNORM
+        };
+        this.quad = new Quad(context, m, linearSampler);
+        auto scale = mat4.scale(float3(width,height,0));
+        auto trans = mat4.translate(float3(0,0,0));
+
+        auto rotate = mat4.rotateZ(180.degrees);
+        auto trans2 = mat4.translate(float3(width/2, height/2, 0));
+        auto trans3 = mat4.translate(float3(-(width.as!int)/2, -(height.as!int)/2, 0));
+
+        // flip the image
+        rotate = trans2 * rotate * trans3;
+
+        quad.setVP(rotate*scale, camera.V, camera.P);
+    }
+}

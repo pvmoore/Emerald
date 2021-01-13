@@ -22,6 +22,12 @@ configuration "test" {
     targetType "executable"
     targetName "bin-emerald"
 }
+configuration "realtime" {
+	#mainSourceFile "src/main.d"
+    targetType "executable"
+    targetName "bin-emerald"
+    versions "REALTIME"
+}
 
 dependency "logging" version="~master"
 dependency "common" version="~master"

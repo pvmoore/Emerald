@@ -1,12 +1,14 @@
 module emerald.version_;
 
-enum VERSION = "0.10";
+enum VERSION = "0.11";
 
 /**
  * ##################################################################
  * HISTORY
  * ##################################################################
  *
+ * 0.11 - Optimise software path tracer slightly
+ *      - Start to implement GPU path tracer
  * 0.10 - Convert to Vulkan
  * 0.9  - Add Rectangle
  *      - Add TriangleMesh

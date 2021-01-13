@@ -8,13 +8,15 @@ private:
     float3 _translate, _scale;
     Angle!float _rotateX, _rotateY, _rotateZ;
     Material material;
-    Shape bvh;
     bool forceSurfaceNormals;
 
     // Computed values
     AABB aabb;
 public:
     uint id;
+    Shape bvh;
+
+    uint getId() { return id; }
 
     this(string filename, Material mat, bool forceSurfaceNormals = false) {
         this.id         = ids++;
@@ -42,6 +44,8 @@ public:
         }
 
         this.bvh = BVH.build(triangles);
+        //this.log("BVH = \n%s", bvh.dump(""));
+        this.log("BVH max depth = %s", bvh.as!BVH.getMaxDepth());
 
         recalculateAABB();
         return this;
@@ -75,14 +79,14 @@ public:
         }
         recalculateAABB();
     }
-    override bool intersect(ref Ray r, IntersectInfo ii, float tmin) {
-        float t;
-	    if(!(aabb.intersect(r, t, tmin, ii.t))) {
-	        return false;
-	    }
-        tmin = min(t, tmin);
+    override bool intersect(ref Ray r, IntersectInfo ii) {
+        // float t;
+	    // if(!(aabb.intersect(r, t, TMIN, ii.t))) {
+	    //     return false;
+	    // }
+        //tmin = min(t, tmin);
 
-        return bvh.intersect(r, ii, tmin);
+        return bvh.intersect(r, ii);
     }
     override string dump(string padding) {
         return "%sTriangleMesh(%s)".format(padding, aabb);
@@ -136,6 +140,12 @@ private:
                 float3 n1 = data.normal(f, 1);
                 float3 n2 = data.normal(f, 2);
                 t.normals(n0, n1, n2);
+            } else {
+                t.normals(
+                    (v1-v0).cross(v2-v0).normalised(),
+                    (v1-v0).cross(v2-v0).normalised(),
+                    (v1-v0).cross(v2-v0).normalised()
+                );
             }
 
             triangles ~= t;

@@ -9,6 +9,8 @@ final class IntersectInfo {
     Shape shape;
     float2 uv;      // set by Triangle
 
+    //uint2 pos;
+
     bool intersected() {
         return shape !is null;
     }

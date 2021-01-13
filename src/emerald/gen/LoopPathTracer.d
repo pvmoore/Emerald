@@ -1,8 +1,8 @@
-module emerald.gen.LoopRayTracer;
+module emerald.gen.LoopPathTracer;
 
 import emerald.all;
 
-final class LoopRayTracer : AbstractRayTracer {
+final class LoopPathTracer : AbstractPathTracer {
 private:
 
 public:
@@ -10,12 +10,15 @@ public:
         super(scene, width, height);
     }
 protected:
-    override float3 radiance(ref Ray r, uint row, uint depth) {
+    override float3 radiance(ref Ray r, uint x, uint row, uint depth) {
         auto ii          = rowData[row].ii;
         auto colour      = BLACK;
         auto reflectance = WHITE;
 
         while(true) {
+
+            //ii.pos = uint2(x,row);
+
             if(!intersectRayWithWorld(r, ii)) {
                 // If miss, return current colour
                 // TODO - use a skybox if supplied

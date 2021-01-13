@@ -1,4 +1,4 @@
-module emerald.geom.Rectangle;
+module emerald.geom.RectangleBuilder;
 
 import emerald.all;
 
@@ -14,21 +14,14 @@ import emerald.all;
  *  +----+
  *  2    3
  */
-final class Rectangle : Shape {
+final class RectangleBuilder {
 private:
-    Triangle[2] triangles;
     float3 _translate, _scale;
     Angle!float _rotateX, _rotateY, _rotateZ;
     float2 uvScale, uvMin, uvMax;
     Material material;
-
-    // Computed values
-    AABB aabb;
 public:
-    uint id;
-
     this(Material mat) {
-        this.id         = ids++;
         this.material   = mat;
         this.uvScale    = float2(1,1);
         this.uvMin      = float2(0,0);
@@ -39,7 +32,7 @@ public:
         this._rotateY   = 0.radians;
         this._rotateZ   = 0.radians;
     }
-    auto build() {
+    Shape[] build() {
 
         /**
          * Creates a rectangle on the Y-axis (y=0).
@@ -51,19 +44,33 @@ public:
          * +--+
          * 3  2
          */
+
+        Triangle[2] triangles;
+
         float3 p0 =      float3(-0.5, 0, -0.5);
         float3 p1 = p0 + float3(   1, 0,    0);
         float3 p2 = p0 + float3(   1, 0,    1);
         float3 p3 = p0 + float3(   0, 0,    1);
 
-        this.triangles[0] = new Triangle(p0, p1, p3, material)
+        triangles[0] = new Triangle(p0, p1, p3, material)
             .setUVScale(uvScale)
             .setUVRange(uvMin, uvMax);
 
-        this.triangles[1] = new Triangle(p2, p3, p1, material)
+        triangles[1] = new Triangle(p2, p3, p1, material)
             .swapUVs()
             .setUVScale(uvScale)
             .setUVRange(uvMin, uvMax);
+
+        triangles[0].normals(
+            (p1-p0).cross(p3-p0).normalised(),
+            (p1-p0).cross(p3-p0).normalised(),
+            (p1-p0).cross(p3-p0).normalised()
+        );
+        triangles[1].normals(
+            (p3-p2).cross(p1-p2).normalised(),
+            (p3-p2).cross(p1-p2).normalised(),
+            (p3-p2).cross(p1-p2).normalised()
+        );
 
         mat4 t1 = mat4.translate(_translate);
         mat4 t2 = mat4.rotate(_rotateX, _rotateY, _rotateZ);
@@ -72,8 +79,10 @@ public:
         triangles[0].transform(t1 * t2 * t3);
         triangles[1].transform(t1 * t2 * t3);
 
-        recalculateAABB();
-        return this;
+        triangles[0].recalculate();
+        triangles[1].recalculate();
+
+        return triangles[0..$].map!(it=>it.as!Shape).array;
     }
     auto setUVScale(float2 uv) {
         this.uvScale = uv;
@@ -100,37 +109,5 @@ public:
         this._rotateY = y;
         this._rotateZ = z;
         return this;
-    }
-    override void recalculate() {
-        triangles[0].recalculate();
-        triangles[1].recalculate();
-        recalculateAABB();
-    }
-    override AABB getAABB() {
-        return aabb;
-    }
-    override Material getMaterial() {
-        expect(false); assert(false);
-    }
-    override float2 getUV(IntersectInfo intersect) {
-        expect(false); assert(false);
-    }
-    override bool intersect(ref Ray r, IntersectInfo ii, float tmin) {
-        float t;
-	    if(!(aabb.intersect(r, t, tmin, ii.t))) {
-	        return false;
-	    }
-        tmin = min(t, tmin);
-
-        bool hit = triangles[0].intersect(r, ii, tmin);
-            hit |= triangles[1].intersect(r, ii, tmin);
-        return hit;
-    }
-    override string dump(string padding) {
-		return "%sRectangle(%s)".format(padding, aabb);
-    }
-private:
-    void recalculateAABB() {
-        this.aabb = triangles[0].getAABB().enclose(triangles[1].getAABB());
     }
 }

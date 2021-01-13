@@ -1,4 +1,4 @@
-module emerald.gen.AbstractRayTracer;
+module emerald.gen.AbstractPathTracer;
 
 import emerald.all;
 
@@ -6,10 +6,10 @@ enum AccelerationStructure { NONE, BVH, BIH }
 enum ACCELERATION_STRUCTURE = AccelerationStructure.BVH;
 
 @fastmath:
-abstract class AbstractRayTracer {
+abstract class AbstractPathTracer {
 protected:
     enum PARALLEL       = true;
-    enum SUPERSAMPLES   = 2;
+    enum SUPERSAMPLES   = 1;  // 2
     enum MAX_THREADS    = 16;    // if PARALLEL == true
     enum SAMPS          = 1;
     enum INV_SAMPS      = 1.0/SAMPS;
@@ -157,7 +157,14 @@ public:
 
         for(auto s=0; s<SAMPS; s++) {
             auto ray = camera.makeRay(x,y, sx,sy);
-            result += clampLo(radiance(ray, y, 0));
+
+            // if(iterations==0 && s==0 && x==0 && y==0) {
+
+            // }
+
+            const colour = radiance(ray, x, y, 0);
+
+            result += clampLo(colour);
         }
 
         return result * INV_SAMPS;
@@ -179,5 +186,5 @@ public:
 
         return ii.intersected();
     }
-    abstract float3 radiance(ref Ray r, uint row, uint depth);
+    abstract float3 radiance(ref Ray r, uint x, uint y, uint depth);
 }

@@ -8,7 +8,7 @@ import emerald.all;
  *
  */
 final class BVH : Shape {
-private:
+public:
     Shape left;
     Shape right;
 	AABB aabb;
@@ -17,8 +17,21 @@ private:
 	this() {
 		this.id = ids++;
 	}
-public:
 	enum AxisStrategy { ROTATE, PICK_LONGEST }
+
+	uint getId() { return id; }
+
+	uint getMaxDepth(uint d = 1) {
+		auto l = cast(BVH)left;
+		auto r = cast(BVH)right;
+
+		auto a = d;
+		auto b = d;
+		if(l) a = l.getMaxDepth(d+1);
+		if(r) b = r.getMaxDepth(d+1);
+
+		return maxOf(a,b);
+	}
 
     override AABB getAABB() {
 		return aabb;
@@ -44,10 +57,10 @@ public:
 		} else if(shapes.length==1) {
 			return shapes[0];
 		} else if(shapes.length==2) {
-			auto bvh  = new BVH();
-			bvh.left  = shapes[0];
-			bvh.right = shapes[1];
-			bvh.aabb  = bvh.left.getAABB().enclose(bvh.right.getAABB());
+			auto bvh     = new BVH();
+			bvh.left     = shapes[0];
+			bvh.right    = shapes[1];
+			bvh.aabb     = bvh.left.getAABB().enclose(bvh.right.getAABB());
 			return bvh;
 		} else {
 			// find the midpoint of the bounding box to use as a qsplit pivot
@@ -67,24 +80,25 @@ public:
 			auto midPoint = qsplit(shapes, pivot, axis);
 
 			/* create a new bounding volume */
-			auto bvh  = new BVH;
-			bvh.left  = build(shapes[0..midPoint], axisStrategy, (axis+1)%3);
-			bvh.right = build(shapes[midPoint..$], axisStrategy, (axis+1)%3);
-			bvh.aabb  = box;
+			auto bvh     = new BVH;
+			bvh.left     = build(shapes[0..midPoint], axisStrategy, (axis+1)%3);
+			bvh.right    = build(shapes[midPoint..$], axisStrategy, (axis+1)%3);
+			bvh.aabb     = box;
 			return bvh;
 		}
 	}
-
-	override bool intersect(ref Ray r, IntersectInfo ii, float tmin) {
+	uint it = 0;
+	override bool intersect(ref Ray r, IntersectInfo ii) {
 		float t;
-	    if(!(aabb.intersect(r, t, tmin, ii.t))) {
+	    if(!(aabb.intersect(r, t, TMIN, ii.t))) {
 	        return false;
 	    }
-        tmin = min(t, tmin);
+        //tmin = min(t, tmin);
 
 		/* Call hit on both branches to get the minimum intersection */
-		bool isahit1 = right.intersect(r, ii, tmin);
-		bool isahit2 =  left.intersect(r, ii, tmin);
+		bool isahit1 = left.intersect(r, ii);
+		bool isahit2 = right.intersect(r, ii);
+
 		return isahit1 || isahit2;
 	}
 	override string dump(string padding) {
@@ -92,6 +106,7 @@ public:
 
 		buf ~= "%sBVH{%s %s\n".format(padding, id, aabb);
 		buf ~= (left ? left.dump(padding ~ "   ") : "   null") ~ "\n";
+		buf ~= padding ~ "------\n";
 		buf ~= (right ? right.dump(padding ~ "   ") : "   null") ~ "\n";
 		buf ~= padding~"}";
 		return buf.data;

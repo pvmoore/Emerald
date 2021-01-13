@@ -24,7 +24,13 @@ public:
         addlargeRoomUsingRectangles();
 
         // light
-        shapes ~= new Sphere(600,	    float3(50,681.6-.27,81.6),	LIGHT);
+        //shapes ~= new Sphere(600,	    float3(50,681.6-.27,81.6),	LIGHT);
+
+        shapes ~= new RectangleBuilder(LIGHT)
+            .scale(float3(30, 20, 30))
+            .translate(float3(50, 81.5, 80))
+            .rotate(0.degrees, 0.degrees, 0.degrees)
+            .build();
 
         shapes ~= new TriangleMesh("resources/models/suzanne.obj.txt", Material.diffuse(float3(1,1,1)))
             .scale(float3(28,28,28))

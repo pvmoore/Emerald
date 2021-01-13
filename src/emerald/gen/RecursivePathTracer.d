@@ -1,15 +1,15 @@
-module emerald.gen.RecursiveRayTracer;
+module emerald.gen.RecursivePathTracer;
 
 import emerald.all;
 
-final class RecursiveRayTracer : AbstractRayTracer {
+final class RecursivePathTracer : AbstractPathTracer {
 private:
 
 public:
     this(Scene scene, uint width, uint height) {
         super(scene, width, height);
     }
-    override float3 radiance(ref Ray r, uint row, uint depth) {
+    override float3 radiance(ref Ray r, uint x, uint row, uint depth) {
 
         auto ii = rowData[row].ii;
 
@@ -39,7 +39,7 @@ public:
 
         float3 _reflect() {
             Ray ray = Ray(intersectPoint, r.direction - norm*2*reflectAngle);
-            return radiance(ray, row, depth);
+            return radiance(ray, x, row, depth);
         }
 
         float3 colour = float3(0,0,0);
@@ -85,13 +85,13 @@ public:
                 }
                 // refract
                 Ray ray  = Ray(intersectPoint, tdir);
-                return mat.emission + f*radiance(ray, row, depth)*(Tr/(1-P));
+                return mat.emission + f*radiance(ray, x, row, depth)*(Tr/(1-P));
             }
             // reflect and refract
             Ray ray = Ray(intersectPoint, tdir);
 
             factor += 1;
-            colour += mat.emission + f*_reflect()*Re + radiance(ray, row, depth)*Tr;
+            colour += mat.emission + f*_reflect()*Re + radiance(ray, x, row, depth)*Tr;
         }
 
         // Ideal DIFFUSE reflection
@@ -120,7 +120,7 @@ public:
             Ray ray = Ray(intersectPoint, d);
 
             factor += 1;
-            colour += mat.emission + f * (radiance(ray, row, depth));
+            colour += mat.emission + f * (radiance(ray, x, row, depth));
         }
 
         return colour * (1.0/factor);

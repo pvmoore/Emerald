@@ -4,24 +4,24 @@ import emerald.all;
 
 final class Photographer {
 private:
-    AbstractRayTracer rayTracer;
+    AbstractPathTracer pathTracer;
     uint width, height;
     int lastScreenShotIteration = -1;
     uint screenshotId;
 public:
-    this(AbstractRayTracer rayTracer, uint width, uint height) {
-        this.rayTracer      = rayTracer;
+    this(AbstractPathTracer pathTracer, uint width, uint height) {
+        this.pathTracer      = pathTracer;
         this.width          = width;
         this.height         = height;
         this.screenshotId   = cast(uint)(getRandomFloat()*100000);
     }
     void takeSnapshot(ubyte[] pixels) {
-        if(lastScreenShotIteration==rayTracer.getIterations()) return;
-        lastScreenShotIteration = rayTracer.getIterations();
+        if(lastScreenShotIteration==pathTracer.getIterations()) return;
+        lastScreenShotIteration = pathTracer.getIterations();
 
         BMP bmp = BMP.create_RGB888(width, height, pixels);
 
-        auto filename = "screenshots/%s-%s.bmp".format(screenshotId, rayTracer.samplesPerPixel());
+        auto filename = "screenshots/%s-%s.bmp".format(screenshotId, pathTracer.samplesPerPixel());
         bmp.write(filename);
     }
 }

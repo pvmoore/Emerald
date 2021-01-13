@@ -13,6 +13,12 @@ public:
     uint id;
     enum Side { FRONT, BACK, TOP, BOTTOM, LEFT, RIGHT }
 
+    uint getId() { return id; }
+
+    Shape[] getShapes() {
+        return triangles[0..$].map!(it=>it.as!Shape).array;
+    }
+
     this() {
         this.id         = ids++;
         this._translate = float3(0,0,0);
@@ -84,17 +90,17 @@ public:
         }
         recalculateAABB();
     }
-    override bool intersect(ref Ray r, IntersectInfo ii, float tmin) {
+    override bool intersect(ref Ray r, IntersectInfo ii) {
         float t;
-	    if(!(aabb.intersect(r, t, tmin, ii.t))) {
+	    if(!(aabb.intersect(r, t, TMIN, ii.t))) {
 	        return false;
 	    }
-        tmin = min(t, tmin);
+        //tmin = min(t, tmin);
 
         /* Call intersect on all triangles to get the minimum intersection */
         bool hit = false;
         foreach(tri; triangles) {
-            hit |= tri.intersect(r, ii, tmin);
+            hit |= tri.intersect(r, ii);
         }
         return hit;
     }

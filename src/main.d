@@ -16,7 +16,13 @@ int WinMain(HINSTANCE theHInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, in
 
 		setEagerFlushing(true);
 
-		app = new EmeraldVK();
+		version(REALTIME) {
+			pragma(msg, "REALTIME");
+			app = new EmeraldGPU();
+		} else {
+			pragma(msg, "STATIC");
+			app = new EmeraldVK();
+		}
 
 		app.initialise();
 		app.run();

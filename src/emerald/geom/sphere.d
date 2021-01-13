@@ -13,6 +13,8 @@ public:
     float radius;
     mat4 transformation;
 
+    uint getId() { return id; }
+
     this(float radius, float3 centre, Material m) {
         this.id             = ids++;
         this.radiusSquared  = radius*radius;
@@ -56,9 +58,9 @@ public:
      *
      * @param t = hit point
      */
-    override bool intersect(ref Ray r, IntersectInfo ii, float tmin) {
+    override bool intersect(ref Ray r, IntersectInfo ii) {
         float t;
-        if(getIntersect(r, t, tmin, ii.t)) {
+        if(getIntersect(r, t, ii.t)) {
             ii.t          = t;
 			ii.hitPoint   = r.origin + r.direction*t;
 			ii.normal     = (ii.hitPoint - centre).normalised();
@@ -71,7 +73,7 @@ public:
 		return "%sSphere(%s)".format(padding, aabb);
     }
 private:
-    bool getIntersect(ref Ray r, ref float t, float tmin, float tmax) {
+    bool getIntersect(ref Ray r, ref float t, float tmax) {
         float3 op = centre - r.origin;
         float b   = op.dot(r.direction);
         float det = (b*b)-op.dot(op) + radiusSquared;
@@ -80,10 +82,10 @@ private:
 
         det = sqrt(det);
 
-        if((t=b-det)>tmin) {
+        if((t=b-det)>TMIN) {
             return t<tmax;
         }
-        if((t=b+det)>tmin) {
+        if((t=b+det)>TMIN) {
             return t<tmax;
         }
         return false;

@@ -3,13 +3,13 @@ module emerald.EmeraldVK;
 import emerald.all;
 import vulkan;
 
-final class EmeraldVK : Emerald, IVulkanApplication {
-private:
+class EmeraldVK : Emerald, IVulkanApplication {
+protected:
     Vulkan vk;
     VkDevice device;
     VulkanContext context;
     VkRenderPass renderPass;
-    VkRenderer renderer;
+    Renderer renderer;
 public:
     this() {
         WindowProperties wprops = {
@@ -20,7 +20,7 @@ public:
             title:        "Emerald "~VERSION,
             icon:         "/pvmoore/_assets/icons/3dshapes.png",
             showWindow:   false,
-            frameBuffers: 2
+            frameBuffers: 3
         };
         VulkanProperties vprops = {
             appName: "Emerald "~VERSION
@@ -35,26 +35,33 @@ public:
         this.log("initialise");
         super.initialise();
 
-        this.renderer = new VkRenderer(context, rayTracer, WIDTH,HEIGHT);
+        this.renderer = new Renderer(context, pathTracer, WIDTH,HEIGHT);
 
         vk.showWindow();
     }
     override void destroy() {
-        this.log("destroy");
+        this.log("Destroying");
         if(!vk) return;
 	    if(device) {
 	        vkDeviceWaitIdle(device);
+            vkQueueWaitIdle(vk.getGraphicsQueue());
+            vkQueueWaitIdle(vk.getComputeQueue());
+
+            this.log("Device is now idle");
 
             super.destroy();
 
-            if(context) context.dumpMemory();
-
-            if(renderer) renderer.destroy();
-	        if(renderPass) device.destroyRenderPass(renderPass);
-
-            if(context) context.destroy();
+            destroyDeviceObjects();
 	    }
 		vk.destroy();
+    }
+    void destroyDeviceObjects() {
+        if(context) context.dumpMemory();
+
+        if(renderer) renderer.destroy();
+        if(renderPass) device.destroyRenderPass(renderPass);
+
+        if(context) context.destroy();
     }
     override void deviceReady(VkDevice device, PerFrameResource[] frameResources) {
         this.log("deviceReady");
@@ -76,7 +83,7 @@ public:
 
         switch(keyCode) {
             case GLFW_KEY_PRINT_SCREEN:
-                photographer.takeSnapshot(renderer.getPixelData());
+                if(photographer) photographer.takeSnapshot(renderer.getPixelData());
                 break;
             case GLFW_KEY_PAUSE:
                 break;
@@ -109,15 +116,18 @@ private:
 
         this.context = new VulkanContext(vk)
             .withMemory(MemID.LOCAL, mem.allocStdDeviceLocal("Emerald_Local", 512.MB))
-            .withMemory(MemID.STAGING, mem.allocStdStagingUpload("Emerald_Staging", 128.MB));
+            .withMemory(MemID.STAGING, mem.allocStdStagingUpload("Emerald_Staging", 128.MB + 16.MB));
 
         context.withBuffer(MemID.LOCAL, BufID.VERTEX, VBufferUsage.VERTEX | VBufferUsage.TRANSFER_DST, 1.MB)
                .withBuffer(MemID.LOCAL, BufID.INDEX, VBufferUsage.INDEX | VBufferUsage.TRANSFER_DST, 1.MB)
                .withBuffer(MemID.LOCAL, BufID.UNIFORM, VBufferUsage.UNIFORM | VBufferUsage.TRANSFER_DST, 1.MB)
-               .withBuffer(MemID.STAGING, BufID.STAGING, VBufferUsage.TRANSFER_SRC, 128.MB);
+               .withBuffer(MemID.LOCAL, BufID.STORAGE, VBufferUsage.STORAGE | VBufferUsage.TRANSFER_DST, 128.MB)
+               .withBuffer(MemID.STAGING, BufID.STAGING, VBufferUsage.TRANSFER_SRC, 128.MB + 4.MB)
+               .withBuffer(MemID.STAGING, BufID.STAGING_DOWN, VBufferUsage.TRANSFER_DST, 4.MB);
 
-        context.withFonts("resources/fonts")
-               .withImages("resources/images")
+        context.withFonts("resources/fonts/")
+               .withImages("resources/images/")
+               .withShaderCompiler("resources/shaders", "resources/shaders")
                .withRenderPass(renderPass);
 
         this.log("shared mem available = %s", context.hasMemory(MemID.SHARED));

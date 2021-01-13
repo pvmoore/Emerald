@@ -6,6 +6,8 @@ import std.random : unpredictableSeed, Mt19937, uniform;
 /* This one is shared otherwise banding artifacts appear. I haven't worked out why ?? */
 __gshared RandomNumbers randomNumbers;
 
+__gshared const uint RANDOM_SEED = 1; //unpredictableSeed();
+
 /* All of these are thread local */
 TentFilter tentFilter;
 RandomNoise3D noise;
@@ -17,7 +19,7 @@ static this() {
     perlin       = new ImprovedPerlin(50);  // every thread has the same seed
 }
 __gshared static this() {
-    randomNumbers = new RandomNumbers(65536);
+    randomNumbers = new RandomNumbers(65536, RANDOM_SEED);
 }
 
 Random getRandom() {

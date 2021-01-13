@@ -25,10 +25,7 @@ import emerald.all;
 
 final class Triangle : Shape {
 private:
-    Material material;
     bool swapUV;
-    float3 p0, p1, p2;
-    float3 n0, n1, n2;
     float2 uvMin, uvRange, uvScale;
     bool hasVertexNormals;
 
@@ -39,6 +36,11 @@ private:
     float3 normal;
 public:
     uint id;
+    Material material;
+    float3 p0, p1, p2;
+    float3 n0, n1, n2;
+
+    uint getId() { return id; }
 
     this(float3 a, float3 b, float3 c, Material m) {
         this.id         = ids++;
@@ -109,18 +111,17 @@ public:
     /**
      *  https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
      */
-    override bool intersect(ref Ray r, IntersectInfo ii, float tmin) {
+    override bool intersect(ref Ray r, IntersectInfo ii) {
         float t;
-	    if(!(aabb.intersect(r, t, tmin, ii.t))) {
-	        return false;
-	    }
-        tmin = min(t, tmin);
+	    // if(!(aabb.intersect(r, t, TMIN, ii.t))) {
+	    //     return false;
+	    // }
+        //tmin = min(t, tmin);
 
-        enum E = 0.00001f;
         auto h = r.direction.cross(edge2);
         auto a = edge1.dot(h);
         // Exit if the ray is parallel to the triangle
-        if(a >= -E && a <= E) return false;
+        if(a >= -EPSILON && a <= EPSILON) return false;
 
         auto f = 1 / a;
         auto s = r.origin - p0;
@@ -133,7 +134,7 @@ public:
 
         t = f * edge2.dot(q);
 
-        if(t >= tmin && t < ii.t) {
+        if(t >= TMIN && t < ii.t) {
             ii.t        = t;
 			ii.hitPoint = r.origin + r.direction*t;
 			ii.normal   = getNormal(u, v);
@@ -145,7 +146,7 @@ public:
 		return false;
     }
     override string dump(string padding) {
-		return "%sTriangle(%s)".format(padding, aabb);
+		return "%sTriangle[%s](%s)".format(padding, id, aabb);
     }
 private:
     float2 calculateUV(float u, float v) {

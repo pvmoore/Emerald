@@ -1,0 +1,133 @@
+#version 450 core
+#extension GL_ARB_separate_shader_objects : enable
+#extension GL_ARB_shading_language_420pack : enable
+#extension GL_GOOGLE_include_directive : require
+
+layout(local_size_x = 8, local_size_y = 8) in;
+
+#include "_bindings.inc"
+#include "_header.inc"
+#include "_aabb.inc"
+#include "_triangle.inc"
+#include "_bvh.inc"
+#include "_shape.inc"
+#include "_utils.inc"
+
+void main() {
+    Ray ray = makeRay(0.5, 0.5);
+    IntersectInfo ii;
+    vec3 colour = vec3(0,0,0);
+    vec3 reflectance = vec3(1,1,1);
+    uint depth = 0;
+
+    while(true) {
+        if(!shape_intersect(ray, ii)) {
+            break;
+        }
+
+        // Assume for now that material 0 is diffuse white
+        //                              1 is light
+
+        uint mat = ii.material;
+        float matEmission    = mat == 0 ? 0    : 12.0f;
+        float maxReflectance = mat == 0 ? 1.0f : 0.0f;
+        bool matIsReflective = false;
+        bool matIsRefractive = false;
+        float matReflectance = 0;
+        float matRefractiveIndex = 1.5;
+
+        // Add some light
+        colour += reflectance * matEmission;
+
+        // Bail if we hit max depth or the material is too dark
+        if(depth++==MAX_DEPTH || getRandomFloat() >= maxReflectance) {
+            break;
+        }
+
+        vec3 intersectPoint  = ii.hitPoint;
+        vec3 norm            = ii.normal;
+        float reflectAngle   = dot(norm, ray.dir);
+
+        // vec3 f = mat.texture
+        //         ? mat.texture.sample(ii.getUV()) * mat.colour
+        //         : mat.normalisedColour;
+
+        vec3 f = mat == 0 ? vec3(1,1,1) : vec3(0,0,0);
+
+        reflectance *= f;
+
+        // properly oriented surface normal
+        vec3 nl = reflectAngle<0 ? norm : norm*-1;
+
+        if(matIsReflective && matReflectance > getRandomFloat()) {
+            // Ideal SPECULAR reflection
+
+            ray = makeRay(intersectPoint, ray.dir - norm*2*reflectAngle);
+
+        } else if(matIsRefractive) {
+            // Ideal dielectric REFRACTION
+
+            // Ray from outside going in?
+            bool into = dot(norm, nl)>0;
+
+            // refractive index
+            float fromRI = 1;   // air
+            float toRI   = matRefractiveIndex;
+            float nnt    = into ? fromRI/toRI : toRI/fromRI;
+            float ddn    = dot(ray.dir, nl);
+            float cos2t  = 1-nnt*nnt*(1-ddn*ddn);
+
+            if(cos2t<0) {
+                // Total internal reflection
+                ray = makeRay(intersectPoint, (ray.dir - norm*2*reflectAngle));
+            } else {
+                // Choose reflection or refraction
+                vec3 tdir = normalize(ray.dir*nnt - norm*((into?1:-1)*(ddn*nnt+sqrt(cos2t))));
+                float a   = toRI-fromRI;
+                float b   = toRI+fromRI;
+                float R0  = (a*a)/(b*b);
+                float c   = 1.0-(into ? -ddn : dot(tdir, norm));
+                float Re  = R0+(1.0-R0)*c*c*c*c*c;
+                float Tr  = 1.0-Re;
+
+                float P = 0.25 + 0.5*Re;
+                if(getRandomFloat(pc.random2)<P) {
+                    // reflect
+                    reflectance *= Re/P;
+                    ray = makeRay(intersectPoint, (ray.dir - norm*2*reflectAngle));
+                } else {
+                    // refract
+                    reflectance *= Tr/(1.0-P);
+                    ray = makeRay(intersectPoint, tdir, true);
+                }
+            }
+
+        } else {
+            // Ideal DIFFUSE reflection
+
+            float r1  = 2*PI*getRandomFloat(pc.random2);
+            float r2  = getRandomFloat(pc.random3);
+            float r2s = sqrt(r2);
+            vec3 w    = nl;
+            vec3 u    = normalize(cross(abs(w.x)>0.1 ? vec3(0,1,0) : vec3(1,0,0), w));
+            vec3 v    = cross(w, u);
+            vec3 d    = u*cos(r1)*r2s +
+                        v*sin(r1)*r2s +
+                        w*sqrt(1-r2);
+
+            ray = makeRay(intersectPoint, d);
+        }
+    }
+
+    if(pc.imageState == 1) {
+        // restart the image from black
+        colours[g_index] = vec3(0,0,0);
+    }
+
+    // Update accumulated colours
+    colours[g_index] += colour;
+
+    vec3 col = colours[g_index] / pc.imageIteration;
+
+    imageStore(imageOut, g_pos, vec4(gamma(col), 1));
+}

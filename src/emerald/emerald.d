@@ -5,27 +5,27 @@ import emerald.all;
 abstract class Emerald {
 protected:
     Scene scene;
-    AbstractRayTracer rayTracer;
+    AbstractPathTracer pathTracer;
     Photographer photographer;
 public:
-    enum WIDTH 	= 1000;
-    enum HEIGHT = 700;
+    enum WIDTH 	= 1024;
+    enum HEIGHT = 800;
 
     void initialise() {
         this.scene        = createScene();
-        //this.rayTracer    = new RecursiveRayTracer(scene, WIDTH, HEIGHT);
-        this.rayTracer    = new LoopRayTracer(scene, WIDTH, HEIGHT);
-        this.photographer = new Photographer(rayTracer, WIDTH, HEIGHT);
+        //this.pathTracer    = new RecursivePathTracer(scene, WIDTH, HEIGHT);
+        this.pathTracer    = new LoopPathTracer(scene, WIDTH, HEIGHT);
+        this.photographer = new Photographer(pathTracer, WIDTH, HEIGHT);
     }
     void destroy() {
         this.log("Destroying...");
 
-        if(rayTracer) rayTracer.destroy();
+        if(pathTracer) pathTracer.destroy();
     }
 
     abstract void run();
 
-private:
+protected:
     Scene createScene() {
         enum S = 5;
 
@@ -46,9 +46,6 @@ private:
         } else {
             return new ManySpheres(WIDTH, HEIGHT).initialise();
         }
-    }
-    void update() {
-
     }
 }
 
