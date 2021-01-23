@@ -10,6 +10,5 @@ interface Shape {
     Material getMaterial();
     void recalculate();
     bool intersect(ref Ray r, IntersectInfo intersect);
-    float2 getUV(IntersectInfo intersect);
     string dump(string padding);
 }

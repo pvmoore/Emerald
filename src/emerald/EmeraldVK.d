@@ -16,7 +16,7 @@ public:
             width:        WIDTH,
             height:       HEIGHT,
             fullscreen:   false,
-            vsync:        true,
+            vsync:        false,
             title:        "Emerald "~VERSION,
             icon:         "/pvmoore/_assets/icons/3dshapes.png",
             showWindow:   false,

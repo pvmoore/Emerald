@@ -7,8 +7,10 @@ layout(local_size_x = 8, local_size_y = 8) in;
 
 #include "_bindings.inc"
 #include "_header.inc"
+#include "_material.inc"
 #include "_aabb.inc"
 #include "_triangle.inc"
+#include "_sphere.inc"
 #include "_bvh.inc"
 #include "_shape.inc"
 #include "_utils.inc"
@@ -25,16 +27,12 @@ void main() {
             break;
         }
 
-        // Assume for now that material 0 is diffuse white
-        //                              1 is light
-
         uint mat = ii.material;
-        float matEmission    = mat == 0 ? 0    : 12.0f;
-        float maxReflectance = mat == 0 ? 1.0f : 0.0f;
-        bool matIsReflective = false;
-        bool matIsRefractive = false;
-        float matReflectance = 0;
-        float matRefractiveIndex = 1.5;
+
+        vec3 matEmission     = mat_emission(mat);
+        vec3 diffuse         = mat_diffuse(mat);
+
+        float maxReflectance = maxElement(diffuse);
 
         // Add some light
         colour += reflectance * matEmission;
@@ -48,27 +46,31 @@ void main() {
         vec3 norm            = ii.normal;
         float reflectAngle   = dot(norm, ray.dir);
 
-        // vec3 f = mat.texture
-        //         ? mat.texture.sample(ii.getUV()) * mat.colour
-        //         : mat.normalisedColour;
+        int textureIndex         = mat_texture(mat);
+        float matReflectance     = mat_reflectance(mat);
+        float matRefractiveIndex = mat_refractiveIndex(mat);
 
-        vec3 f = mat == 0 ? vec3(1,1,1) : vec3(0,0,0);
+        bool matIsReflective = matReflectance > 0;
+        bool matIsRefractive = matRefractiveIndex > 0;
+
+        vec3 f = textureIndex >= 0
+                    ? texture(textureSampler, convertUV(textureIndex, ii.uv)).rgb * diffuse
+                    : diffuse / maxReflectance;
 
         reflectance *= f;
 
         // properly oriented surface normal
-        vec3 nl = reflectAngle<0 ? norm : norm*-1;
+        vec3 nl        = reflectAngle<0 ? norm : norm*-1;
+        vec3 direction = ray.dir - norm*2*reflectAngle;
 
         if(matIsReflective && matReflectance > getRandomFloat()) {
             // Ideal SPECULAR reflection
-
-            ray = makeRay(intersectPoint, ray.dir - norm*2*reflectAngle);
 
         } else if(matIsRefractive) {
             // Ideal dielectric REFRACTION
 
             // Ray from outside going in?
-            bool into = dot(norm, nl)>0;
+            bool into = dot(norm, nl) > 0;
 
             // refractive index
             float fromRI = 1;   // air
@@ -77,10 +79,8 @@ void main() {
             float ddn    = dot(ray.dir, nl);
             float cos2t  = 1-nnt*nnt*(1-ddn*ddn);
 
-            if(cos2t<0) {
-                // Total internal reflection
-                ray = makeRay(intersectPoint, (ray.dir - norm*2*reflectAngle));
-            } else {
+            // cos2t < 0 is Total internal reflection
+            if(cos2t >= 0) {
                 // Choose reflection or refraction
                 vec3 tdir = normalize(ray.dir*nnt - norm*((into?1:-1)*(ddn*nnt+sqrt(cos2t))));
                 float a   = toRI-fromRI;
@@ -91,17 +91,13 @@ void main() {
                 float Tr  = 1.0-Re;
 
                 float P = 0.25 + 0.5*Re;
-                if(getRandomFloat(pc.random2)<P) {
-                    // reflect
-                    reflectance *= Re/P;
-                    ray = makeRay(intersectPoint, (ray.dir - norm*2*reflectAngle));
-                } else {
-                    // refract
-                    reflectance *= Tr/(1.0-P);
-                    ray = makeRay(intersectPoint, tdir, true);
-                }
-            }
 
+                // Choose reflect or refract
+                bool reflect = getRandomFloat(pc.random2) < P;
+
+                reflectance *= reflect ? Re/P : Tr/(1.0-P);
+                direction    = reflect ? direction : tdir;
+            }
         } else {
             // Ideal DIFFUSE reflection
 
@@ -111,12 +107,13 @@ void main() {
             vec3 w    = nl;
             vec3 u    = normalize(cross(abs(w.x)>0.1 ? vec3(0,1,0) : vec3(1,0,0), w));
             vec3 v    = cross(w, u);
-            vec3 d    = u*cos(r1)*r2s +
+
+            direction = u*cos(r1)*r2s +
                         v*sin(r1)*r2s +
                         w*sqrt(1-r2);
-
-            ray = makeRay(intersectPoint, d);
         }
+
+        ray = makeRay(intersectPoint, direction);
     }
 
     if(pc.imageState == 1) {

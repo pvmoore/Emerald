@@ -7,8 +7,11 @@ uint g_index = g_pos.x + g_pos.y*SIZE.x;
 //uint l_index = gl_LocalInvocationIndex;
 
 const float PI       = 3.14159265359f;
+const float PI_2     = PI / 2.0f;
 const float EPSILON  = 0.00001f;
-const float TMIN     = 0.00005f;
+const uint UINT_MAX  = 0xffffffffu;
+
+const float TMIN     = 0.05f;
 const float TMAX     = 100000000.0f;
 const uint MAX_DEPTH = 5;
 

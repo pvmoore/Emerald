@@ -6,12 +6,12 @@ final class Sphere : Shape {
 private:
     float radiusSquared;
     AABB aabb;
-    Material material;
 public:
     uint id;
     float3 centre;
     float radius;
     mat4 transformation;
+    Material material;
 
     uint getId() { return id; }
 
@@ -35,24 +35,6 @@ public:
     override void recalculate() {
         this.aabb = AABB(centre-radius, centre+radius);
     }
-
-    /**
-     * Map 3D hit point on the sphere to 2D UV texture coordinates.
-     */
-    override float2 getUV(IntersectInfo intersect) {
-        import std.math : asin, atan2, PI, PI_2;
-        enum invPI  = 1.0 / PI;
-        enum inv2PI = 1.0 / (PI*2);
-
-        auto normal = (intersect.hitPoint - centre).normalised();
-
-        auto t = float4(normal,0) * transformation;
-
-        auto u = 1 - (0.5 + (atan2(t.z, t.x) * inv2PI));
-        auto v = 1 - ((asin(t.y)+PI_2) * invPI);
-
-        return float2(u.clamp(0,1), v.clamp(0,1));
-    }
     /**
      * Solve t^2*d.d + 2*t*(o-p).d + (o-p).(o-p)-R^2 = 0
      *
@@ -64,6 +46,7 @@ public:
             ii.t          = t;
 			ii.hitPoint   = r.origin + r.direction*t;
 			ii.normal     = (ii.hitPoint - centre).normalised();
+            ii.uv         = calculateUV(ii.hitPoint);
 			ii.shape      = this;
             return true;
         }
@@ -73,6 +56,23 @@ public:
 		return "%sSphere(%s)".format(padding, aabb);
     }
 private:
+    /**
+     * Map 3D hit point on the sphere to 2D UV texture coordinates.
+     */
+    float2 calculateUV(float3 hitPoint) {
+        import std.math : asin, atan2, PI, PI_2;
+        enum invPI  = 1.0 / PI;
+        enum inv2PI = 1.0 / (PI*2);
+
+        auto normal = (hitPoint - centre).normalised();
+
+        auto t = float4(normal,0) * transformation;
+
+        auto u = 1 - (0.5 + (atan2(t.z, t.x) * inv2PI));
+        auto v = 1 - ((asin(t.y)+PI_2) * invPI);
+
+        return float2(u.clamp(0,1), v.clamp(0,1));
+    }
     bool getIntersect(ref Ray r, ref float t, float tmax) {
         float3 op = centre - r.origin;
         float b   = op.dot(r.direction);

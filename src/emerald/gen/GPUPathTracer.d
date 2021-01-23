@@ -3,7 +3,7 @@ module emerald.gen.GPUPathTracer;
 import emerald.all;
 import vulkan;
 
-final class GPUPathTracer {
+final class GPUPathTracer : IPathTracerStats {
 private:
     static struct PushConstants {
         float frameNumber;
@@ -183,14 +183,31 @@ private:
         [23]
         [24]
         [25] uint material;
+        [26] swapUV (0 or 1)
+        [27] uvScale
+        [28]
+        [29] uvRange
+        [30]
+        [31] uvMin
+        [32]
+
+        Sphere
+        [7] radius
+        [8] centre
+        [9]
+        [10]
+        [11-26] transformation
+        [27] uint material
         */
 
-        enum Type { BVH = 0, TRI = 1 }
-        enum Size { BVH = 9, TRI = 26 }
+        enum Type { BVH = 0, TRI = 1, SPHERE  = 2 }
+        enum Size { BVH = 9, TRI = 33, SPHERE = 28 }
         uint nextFree = 0;
         float* nextFreePtr = cast(float*)&nextFree;
 
         uint[uint] id2index;
+
+        //import Sphere2 = emerald.all : Sphere;
 
         void _recurse(Shape s) {
             uint i = nextFree;
@@ -248,22 +265,67 @@ private:
                 data[i++] = t.n2.y;
                 data[i++] = t.n2.z;
 
-                if(t.material.isEmissive) {
-                    data[i++] = 1;  // TODO - material
-                } else {
-                    data[i++] = 0;  // TODO - material
-                }
+                // material
+                data[i++] = t.material.id * 9;
+
+                // [26] swapUV (0 or 1)
+                // [27] uvScale
+                // [28]
+                // [29] uvRange
+                // [30]
+                // [31] uvMin
+                // [32]
+
+                data[i++] = t.swapUV ? 1 : 0;
+                data[i++] = t.uvScale.x;
+                data[i++] = t.uvScale.y;
+                data[i++] = t.uvRange.x;
+                data[i++] = t.uvRange.y;
+                data[i++] = t.uvMin.x;
+                data[i++] = t.uvMin.y;
+
+            } else if(s.isA!Sphere) {
+                auto t = s.as!Sphere;
+                nextFree += Size.SPHERE;
+
+                id2index[s.getId()] = i;
+
+                data[i++] = Type.SPHERE;
+                data[i++] = t.getAABB().min().x;
+                data[i++] = t.getAABB().min().y;
+                data[i++] = t.getAABB().min().z;
+                data[i++] = t.getAABB().max().x;
+                data[i++] = t.getAABB().max().y;
+                data[i++] = t.getAABB().max().z;
+
+                data[i++] = t.radius;
+                data[i++] = t.centre.x;
+                data[i++] = t.centre.y;
+                data[i++] = t.centre.z;
+
+                data[i++] = t.transformation[0][0];
+                data[i++] = t.transformation[0][1];
+                data[i++] = t.transformation[0][2];
+                data[i++] = t.transformation[0][3];
+                data[i++] = t.transformation[1][0];
+                data[i++] = t.transformation[1][1];
+                data[i++] = t.transformation[1][2];
+                data[i++] = t.transformation[1][3];
+                data[i++] = t.transformation[2][0];
+                data[i++] = t.transformation[2][1];
+                data[i++] = t.transformation[2][2];
+                data[i++] = t.transformation[2][3];
+                data[i++] = t.transformation[3][0];
+                data[i++] = t.transformation[3][1];
+                data[i++] = t.transformation[3][2];
+                data[i++] = t.transformation[3][3];
+
+                data[i++] = t.material.id * 9;
+
             } else if(s.isA!TriangleMesh) {
                 auto mesh = s.as!TriangleMesh;
 
                 _recurse(mesh.bvh);
-
-            } else if(s.isA!Box) {
-                auto b = s.as!Box;
-
-                foreach(sh; b.getShapes()) {
-                    _recurse(sh);
-                }
 
             } else {
                 todo("Handle Shape %s".format(s));
@@ -283,14 +345,40 @@ private:
         shapeData.write(data[0..nextFree]);
     }
     void createMaterialData() {
-        float[] materials = [
-            1,2,3,4,5,6
-        ];
+        /*
+            [0] reflectance     // 0 = not reflective
+            [1] refractiveIndex // 0 = not refractive
+            [2] Diffuse RGB
+            [3]
+            [4]
+            [5] Emission RGB
+            [6]
+            [7]
+            [8] texture
+        */
+
+        this.log("There are %s materials:", Material.getAllMaterials().length);
+        float[] materials;
+        foreach(i, m; Material.getAllMaterials()) {
+            auto g = m.getForGPU();
+            materials ~=g;
+            this.log("  [%s] %s", i, g);
+        }
+
         this.materialData = new StaticGPUData!float(context, 10000)
             .uploadData(materials);
     }
     void loadTextures() {
-        this.texture = context.images().get("uvs.png");
+        /*
+            There is a single texture which contains 16 sub-textures:
+
+            | uvs   | brick   | redWhite | earth
+            | rock  | marble  |    2,1   |  3,1
+            |  0,2  |   1,2   |    2,2   |  3,2
+            |  0,3  |   1,3   |    2,3   |  3,3
+
+        */
+        this.texture = context.images().get("4096x4096.png");
     }
     void createRandomBuffer() {
         enum NUM_RANDOMS = 1024*1024*1;

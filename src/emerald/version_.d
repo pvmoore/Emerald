@@ -1,12 +1,13 @@
 module emerald.version_;
 
-enum VERSION = "0.11";
+enum VERSION = "0.12";
 
 /**
  * ##################################################################
  * HISTORY
  * ##################################################################
  *
+ * 0.12 - Enable Spheres and materials for GPU path tracer
  * 0.11 - Optimise software path tracer slightly
  *      - Start to implement GPU path tracer
  * 0.10 - Convert to Vulkan
@@ -25,8 +26,5 @@ enum VERSION = "0.11";
  * ##################################################################
  * - Create a bubble sphere with eta=1 (same as air)
  * - Add a skybox (and add an outdoor scene to demonstrate it)
- * - Use shaders
- * - Convert to vulkan
- * - Add vulkan compute shader version (or fragment shader)
  * - Run averaging pass every few iterations
  */

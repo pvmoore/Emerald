@@ -31,7 +31,7 @@ public:
         const reflectAngle    = norm.dot(r.direction);
 
         float3 f = mat.texture
-            ? mat.texture.sample(ii.getUV()) * mat.colour
+            ? mat.texture.sample(ii.uv) * mat.colour
             : mat.normalisedColour;
 
         // properly oriented surface normal
@@ -52,7 +52,7 @@ public:
         }
 
         // Ideal dielectric REFRACTION
-        if(mat.isRefractive) {
+        if(mat.refractIndex != 0) {
             // Ray from outside going in?
             bool into = norm.dot(nl)>0;
 

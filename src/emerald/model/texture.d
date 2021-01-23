@@ -4,13 +4,27 @@ import emerald.all;
 
 final class Texture {
 private:
-    string filename;
+    enum prefix = "resources/images/";
     float3[] data;
     uint width, height;
+    struct _ID { uint id; string name; }
+    _ID id;
 public:
-    this(string filename) {
-        this.filename = filename;
-        this.readImage(filename);
+    enum ID {
+        UVS      = _ID(0, "uvs.png"),
+        BRICK    = _ID(1, "brick.png"),
+        REDWHITE = _ID(2, "red_white.png"),
+        EARTH    = _ID(3, "earth.png"),
+        ROCK     = _ID(4, "rock.png"),
+        MARBLE   = _ID(5, "marble.png")
+    }
+    uint getIndex() {
+        return id.id;
+    }
+
+    this(ID id) {
+        this.id = id;
+        this.readImage(prefix ~ id.name);
     }
     /**
      * top-left to bottom-right, 0.0 -> 1.0

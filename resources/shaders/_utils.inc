@@ -4,6 +4,9 @@
 uint randomIndex = 0;
 uint tentFilterIndex = 0;
 
+float maxElement(vec3 v) {
+    return max(v.x, max(v.y, v.z));
+}
 
 float getRandomFloat() {
     uint i = g_index + randomIndex;

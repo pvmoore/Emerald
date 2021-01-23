@@ -4,12 +4,12 @@ import emerald.all;
 
 final class Photographer {
 private:
-    AbstractPathTracer pathTracer;
+    IPathTracerStats pathTracer;
     uint width, height;
     int lastScreenShotIteration = -1;
     uint screenshotId;
 public:
-    this(AbstractPathTracer pathTracer, uint width, uint height) {
+    this(IPathTracerStats pathTracer, uint width, uint height) {
         this.pathTracer      = pathTracer;
         this.width          = width;
         this.height         = height;

@@ -19,7 +19,7 @@ public:
         createScene();
     }
     void loadTextures() {
-        this.floorTex = new Texture("C:/pvmoore/_assets/images/png/floor.png");
+        this.floorTex = new Texture(Texture.ID.REDWHITE);
     }
     void createScene() {
         addlargeRoomUsingSpheres();
@@ -31,8 +31,8 @@ public:
 
         shapes ~= [
         //         radius,  position,                   material
-        new Sphere(40,      float3(50,40,40),           Material.diffuse(float3(1.0, 1.0, 1.0))
-                                                                .tex(floorTex))
+        new Sphere(40,      float3(50,40,40),           new Material().setDiffuse(float3(1.0, 1.0, 1.0))
+                                                                .setTexture(floorTex))
                                                                 .transform(rotXY),
 
         new Sphere(600,	    float3(50,681.6-.27,81.6),	LIGHT)

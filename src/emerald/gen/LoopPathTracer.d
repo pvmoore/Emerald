@@ -41,7 +41,7 @@ protected:
             const reflectAngle    = norm.dot(r.direction);
 
             float3 f = mat.texture
-                ? mat.texture.sample(ii.getUV()) * mat.colour
+                ? mat.texture.sample(ii.uv) * mat.colour
                 : mat.normalisedColour;
 
             reflectance *= f;
@@ -54,7 +54,7 @@ protected:
 
                 r = Ray(intersectPoint, (r.direction - norm*2*reflectAngle).normalised());
 
-            } else if(mat.isRefractive) {
+            } else if(mat.refractIndex != 0) {
                 // Ideal dielectric REFRACTION
 
                 // Ray from outside going in?

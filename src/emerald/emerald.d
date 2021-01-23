@@ -27,21 +27,21 @@ public:
 
 protected:
     Scene createScene() {
-        enum S = 5;
+        enum S = -5;
 
-        static if(S == 0) {
+        if(S == 0) {
             return new CornellBox(WIDTH, HEIGHT).initialise();
-        } else static if(S==1) {
+        } else if(S==1) {
             return new OneSphere(WIDTH, HEIGHT).initialise();
-        } else static if(S==2) {
+        } else if(S==2) {
             return new Scene2(WIDTH, HEIGHT).initialise();
-        } else static if(S==3) {
+        } else if(S==3) {
             return new Scene3(WIDTH, HEIGHT).initialise();
-        } else static if(S==4) {
+        } else if(S==4) {
             return new Scene4(WIDTH, HEIGHT).initialise();
-        } else static if(S==5) {
+        } else if(S==5) {
             return new SuzanneScene(WIDTH, HEIGHT).initialise();
-        } else static if(S==6) {
+        } else if(S==6) {
             return new RefractionScene(WIDTH, HEIGHT).initialise();
         } else {
             return new ManySpheres(WIDTH, HEIGHT).initialise();

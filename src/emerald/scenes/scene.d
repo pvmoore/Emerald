@@ -16,6 +16,15 @@ protected:
     Camera camera;
     Shape[] shapes;
     Shape bvh;
+
+    Material GLASS;
+    Material MIRROR;
+    Material LIGHT;
+    Material red;
+    Material green;
+    Material blue;
+    Material dullwhite;
+    Material black;
 public:
     final Camera getCamera() { return camera; }
     final Shape getBVH() { return bvh; }
@@ -23,6 +32,14 @@ public:
 
 	this(Camera camera) {
         this.camera = camera;
+        this.GLASS = new Material().setRefraction(1.5);
+        this.MIRROR = new Material().setReflection(1);
+        this.LIGHT = new Material().setEmission(float3(12,12,12));
+        this.red = new Material().setDiffuse(float3(.75,.25,.25));
+        this.green = new Material().setDiffuse(float3(.25,.75,.25));
+        this.blue = new Material().setDiffuse(float3(.25,.25,.75));
+        this.dullwhite = new Material().setDiffuse(float3(.75,.75,.75));
+        this.black = new Material().setDiffuse(float3(0,0,0));
 	}
     final Scene initialise() {
         this.bvh = BVH.build(shapes);
@@ -34,40 +51,42 @@ public:
     }
 protected:
     final void addlargeRoomUsingRectangles() {
+
+
         // left
-        shapes ~= new RectangleBuilder(Material.diffuse(float3(.75,.25,.25)))
+        shapes ~= new RectangleBuilder(red)
             .rotate(0.degrees, 0.degrees, 90.degrees)
             .scale(float3(300,300,300))
             .translate(float3(-30,0,0))
             .build();
         // right
-        shapes ~= new RectangleBuilder(Material.diffuse(float3(.25,.25,.75)))
+        shapes ~= new RectangleBuilder(blue)
             .rotate(0.degrees, 0.degrees, 90.degrees)
             .scale(float3(300,300,300))
             .translate(float3(130,0,0))
             .build();
 
         // floor
-        shapes ~= new RectangleBuilder(Material.diffuse(float3(.75,.75,.75)))
+        shapes ~= new RectangleBuilder(dullwhite)
             .rotate(0.degrees, 0.degrees, 0.degrees)
             .scale(float3(500,500,500))
             .translate(float3(0,0,0))
             .build();
         // ceiling
-        shapes ~= new RectangleBuilder(Material.diffuse(float3(.75,.75,.75)))
+        shapes ~= new RectangleBuilder(dullwhite)
             .rotate(0.degrees, 0.degrees, 0.degrees)
             .scale(float3(500,500,500))
             .translate(float3(0,81.6,0))
             .build();
 
         // back
-        shapes ~= new RectangleBuilder(Material.diffuse(float3(.25,.75,.25)))
+        shapes ~= new RectangleBuilder(green)
             .rotate(90.degrees, 0.degrees, 0.degrees)
             .scale(float3(500,500,500))
             .translate(float3(0,0,-7))
             .build();
         // front (behind camera)
-        shapes ~= new RectangleBuilder(Material.diffuse(float3(0,0,0)))
+        shapes ~= new RectangleBuilder(black)
             .rotate(90.degrees, 0.degrees, 0.degrees)
             .scale(float3(500,500,500))
             .translate(float3(0,0,170))
@@ -77,12 +96,12 @@ protected:
     final void addlargeRoomUsingSpheres() {
         shapes ~= [
         //         radius,  position,                   material
-        new Sphere(1e4,		float3(1e4-30,40.8,81.6),	Material.diffuse(float3(.75,.25,.25))),//Left
-        new Sphere(1e4,		float3(-1e4+129,40.8,81.6), Material.diffuse(float3(.25,.25,.75))),//Rght
-        new Sphere(1e4,		float3(50,40.8, 1e4),		Material.diffuse(float3(.25,.75,.25))),//Back
-        new Sphere(1e4,		float3(50,40.8,-1e4+170),	Material.diffuse(float3(0,0,0))),//Frnt
-        new Sphere(1e4,		float3(50, 1e4, 81.6),		Material.diffuse(float3(.75,.75,.75))),//Botm
-        new Sphere(1e4,		float3(50,-1e4+81.6,81.6),	Material.diffuse(float3(.75,.75,.75)))//Top
+        new Sphere(1e4,		float3(1e4-30,40.8,81.6),	red),//Left
+        new Sphere(1e4,		float3(-1e4+129,40.8,81.6), blue),//Rght
+        new Sphere(1e4,		float3(50,40.8, 1e4),		green),//Back
+        new Sphere(1e4,		float3(50,40.8,-1e4+170),	black),//Frnt
+        new Sphere(1e4,		float3(50, 1e4, 81.6),		dullwhite),//Botm
+        new Sphere(1e4,		float3(50,-1e4+81.6,81.6),	dullwhite)//Top
         ];
     }
     // void addBox(float3 p0, float3 dim, Material mat) {

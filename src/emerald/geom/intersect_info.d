@@ -7,9 +7,7 @@ final class IntersectInfo {
     float3 hitPoint;
     float3 normal;
     Shape shape;
-    float2 uv;      // set by Triangle
-
-    //uint2 pos;
+    float2 uv;      
 
     bool intersected() {
         return shape !is null;
@@ -17,8 +15,5 @@ final class IntersectInfo {
     void reset() {
         shape = null;
         t     = float.max;
-    }
-    float2 getUV() {
-        return shape.getUV(this);
     }
 }

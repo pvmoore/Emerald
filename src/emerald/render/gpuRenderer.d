@@ -41,8 +41,8 @@ public:
         if(linearSampler) device.destroySampler(linearSampler);
     }
     ubyte[] getPixelData() {
-        todo();
-        return null;
+        this.log("getPixelData not implemented");
+        return new ubyte[width*height*3];
     }
     void render(Frame frame) {
 
@@ -168,16 +168,19 @@ private:
             format: VFormat.B8G8R8A8_UNORM
         };
         this.quad = new Quad(context, m, linearSampler);
+
         auto scale = mat4.scale(float3(width,height,0));
         auto trans = mat4.translate(float3(0,0,0));
 
-        auto rotate = mat4.rotateZ(180.degrees);
-        auto trans2 = mat4.translate(float3(width/2, height/2, 0));
-        auto trans3 = mat4.translate(float3(-(width.as!int)/2, -(height.as!int)/2, 0));
+        auto transToCentre = mat4.translate(float3(width/2, height/2, 0));
+        auto transFromCentre = mat4.translate(float3(-(width.as!int)/2, -(height.as!int)/2, 0));
 
-        // flip the image
-        rotate = trans2 * rotate * trans3;
+        auto z180 = mat4.rotateZ(180.degrees);
+        auto y180 = mat4.rotateY(180.degrees);
 
-        quad.setVP(rotate*scale, camera.V, camera.P);
+        // flip and rotate the image
+        auto flipRotate = transToCentre * y180*z180 * transFromCentre;
+
+        quad.setVP(trans*flipRotate*scale, camera.V, camera.P);
     }
 }

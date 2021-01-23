@@ -61,16 +61,8 @@ public:
             .setUVScale(uvScale)
             .setUVRange(uvMin, uvMax);
 
-        triangles[0].normals(
-            (p1-p0).cross(p3-p0).normalised(),
-            (p1-p0).cross(p3-p0).normalised(),
-            (p1-p0).cross(p3-p0).normalised()
-        );
-        triangles[1].normals(
-            (p3-p2).cross(p1-p2).normalised(),
-            (p3-p2).cross(p1-p2).normalised(),
-            (p3-p2).cross(p1-p2).normalised()
-        );
+        triangles[0].generateVertexNormals();
+        triangles[1].generateVertexNormals();
 
         mat4 t1 = mat4.translate(_translate);
         mat4 t2 = mat4.rotate(_rotateX, _rotateY, _rotateZ);

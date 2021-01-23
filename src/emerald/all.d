@@ -7,7 +7,7 @@ public:
 @fastmath:
 
 enum EPSILON = 0.00001f;
-enum TMIN    = 0.00005f;
+enum TMIN    = 0.05f;       // Setting this lower causes artifacts
 
 version(LDC) {
     import ldc.attributes : fastmath;
@@ -20,6 +20,7 @@ import common    : as, Borrowed, expect, From, isA, todo;
 import resources : Image, BMP, PNG, Obj, ModelData;
 import maths     : AABB,
                    Angle,
+                   Camera2D,
                    clamp,
                    FastRNG,
                    ImprovedPerlin,
@@ -57,6 +58,7 @@ import std.algorithm.iteration  : map;
 import emerald.emerald;
 import emerald.EmeraldGPU;
 import emerald.EmeraldVK;
+import emerald.IPathTracerStats;
 import emerald.photos;
 import emerald.version_;
 
@@ -65,7 +67,7 @@ import emerald.gen.GPUPathTracer;
 import emerald.gen.LoopPathTracer;
 import emerald.gen.RecursivePathTracer;
 
-import emerald.geom.box;
+import emerald.geom.BoxBuilder;
 import emerald.geom.bvh;
 import emerald.geom.intersect_info;
 import emerald.geom.RectangleBuilder;

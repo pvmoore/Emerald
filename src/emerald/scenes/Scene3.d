@@ -24,22 +24,29 @@ public:
         shapes ~= [
         //         radius,  position,                   material
         // specular diffuse
-        new Sphere(8,		float3(-10,10,50),			Material.diffuse(float3(1,0.7,0.2))),
-        new Sphere(8,		float3(10,10,50),			Material.diffuse(float3(1,0.7,0.2)).refl(0.03)),
-        new Sphere(8,		float3(30,10,50),			Material.diffuse(float3(1,0.7,0.2)).refl(0.2)),
-        new Sphere(8,		float3(50,10,50),			Material.diffuse(float3(1,0.7,0.2)).refl(0.6)),
-        new Sphere(8,		float3(70,10,50),			Material.diffuse(float3(1,0.7,0.2)).refl(1.2)),
-        new Sphere(8,		float3(90,10,50),			Material.diffuse(float3(1,0.7,0.2)).refl(3)),
-        new Sphere(8,		float3(110,10,50),			Material.diffuse(float3(1,0.7,0.2)).refl(8)),
+        new Sphere(8,		float3(-10,10,50),			new Material().setDiffuse(float3(1,0.7,0.2))),
+        new Sphere(8,		float3(10,10,50),			new Material().setDiffuse(float3(1,0.7,0.2))
+                                                                      .setReflection(0.03)),
+        new Sphere(8,		float3(30,10,50),			new Material().setDiffuse(float3(1,0.7,0.2))
+                                                                      .setReflection(0.2)),
+        new Sphere(8,		float3(50,10,50),			new Material().setDiffuse(float3(1,0.7,0.2))
+                                                                      .setReflection(0.6)),
+        new Sphere(8,		float3(70,10,50),			new Material().setDiffuse(float3(1,0.7,0.2))
+                                                                      .setReflection(1.2)),
+        new Sphere(8,		float3(90,10,50),			new Material().setDiffuse(float3(1,0.7,0.2))
+                                                                      .setReflection(3)),
+        new Sphere(8,		float3(110,10,50),			new Material().setDiffuse(float3(1,0.7,0.2))
+                                                                      .setReflection(8)),
 
         // refractive indexes
-        new Sphere(8,		float3(-10,30,50),			Material.refract(1.333)),
-        new Sphere(8,		float3(10,30,50),			Material.refract(1.52)),
-        new Sphere(8,		float3(30,30,50),			Material.refract(1.77)),
-        new Sphere(8,		float3(50,30,50),			Material.refract(2.419)),
+        new Sphere(8,		float3(-10,30,50),			new Material().setRefraction(1.333)),
+        new Sphere(8,		float3(10,30,50),			new Material().setRefraction(1.52)),
+        new Sphere(8,		float3(30,30,50),			new Material().setRefraction(1.77)),
+        new Sphere(8,		float3(50,30,50),			new Material().setRefraction(2.419)),
 
         // diffuse yellow glass
-        new Sphere(8,		float3(-10,50,50),			Material.diffuse(float3(1,0.7,0.2)).refr(1.5)),
+        new Sphere(8,		float3(-10,50,50),			new Material().setDiffuse(float3(1,0.7,0.2))
+                                                                      .setRefraction(1.5)),
 
 
         // Top light

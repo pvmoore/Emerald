@@ -27,41 +27,27 @@ struct Triangle {
     [23]
     [24]
     [25] uint material;
+    [26] swapUV (0 or 1)
+    [27] uvScale
+    [28]
+    [29] uvRange
+    [30]
+    [31] uvMin
+    [32]
 };
 */
 
-#define TRI_p0(i)   vec3(shapes[i+7],  shapes[i+8],  shapes[i+9])
-#define TRI_p1(i)   vec3(shapes[i+10], shapes[i+11], shapes[i+12])
-#define TRI_p2(i)   vec3(shapes[i+13], shapes[i+14], shapes[i+15])
-#define TRI_n0(i)   vec3(shapes[i+16], shapes[i+17], shapes[i+18])
-#define TRI_n1(i)   vec3(shapes[i+19], shapes[i+20], shapes[i+21])
-#define TRI_n2(i)   vec3(shapes[i+22], shapes[i+23], shapes[i+24])
-#define TRI_mat(i)  int(shapes[i+25])
-
-// vec3 getNormal(float u, float v) {
-//     if(hasVertexNormals) {
-//         //
-//         // +----+ u
-//         // |   /
-//         // |  /
-//         // | /
-//         // |/
-//         // +
-//         // v
-//         float p0Dist = 1 - (u+v);
-//         float p1Dist = u;
-//         float p2Dist = v;
-
-//         return (n0 * p0Dist +
-//                 n1 * p1Dist +
-//                 n2 * p2Dist).normalised();
-//     }
-//     return (p1-p0).cross(p2-p0).normalised();;
-// }
-
-vec2 calculateUV(float u, float v) {
-    return vec2(u,v);
-}
+#define TRI_p0(i)      vec3(shapes[i+7],  shapes[i+8],  shapes[i+9])
+#define TRI_p1(i)      vec3(shapes[i+10], shapes[i+11], shapes[i+12])
+#define TRI_p2(i)      vec3(shapes[i+13], shapes[i+14], shapes[i+15])
+#define TRI_n0(i)      vec3(shapes[i+16], shapes[i+17], shapes[i+18])
+#define TRI_n1(i)      vec3(shapes[i+19], shapes[i+20], shapes[i+21])
+#define TRI_n2(i)      vec3(shapes[i+22], shapes[i+23], shapes[i+24])
+#define TRI_mat(i)     int(shapes[i+25])
+#define tri_swapUV(i)  (shapes[i+26] == 1)
+#define tri_uvScale(i) vec2(shapes[i+27], shapes[i+28])
+#define tri_uvRange(i) vec2(shapes[i+29], shapes[i+30])
+#define tri_uvMin(i)   vec2(shapes[i+31], shapes[i+32])
 
 vec3 triVertexNormal(uint shape, float u, float v) {
     //
@@ -83,6 +69,17 @@ vec3 triVertexNormal(uint shape, float u, float v) {
     return normalize(n0 * p0Dist +
                      n1 * p1Dist +
                      n2 * p2Dist);
+}
+
+vec2 calculateUV(uint shape, vec2 uv) {
+    if(tri_swapUV(shape)) {
+        uv = vec2(1,1) - uv;
+    }
+    uv *= tri_uvScale(shape);
+    uv = fract(uv);
+    uv *= tri_uvRange(shape);
+    uv += tri_uvMin(shape);
+    return uv;
 }
 
 bool tri_intersect(uint shape, Ray ray, inout IntersectInfo ii) {
@@ -118,8 +115,7 @@ bool tri_intersect(uint shape, Ray ray, inout IntersectInfo ii) {
         ii.t        = t;
         ii.hitPoint = ray.origin + ray.dir*t;
         ii.material = TRI_mat(shape);
-
-        //ii.uv       = calculateUV(u, v);
+        ii.uv       = mat_hasTexture(ii.material) ? calculateUV(shape, vec2(u,v)) : vec2(0,0);
 
         //ii.normal   = normalize(cross(edge1, edge2));
         ii.normal = triVertexNormal(shape, u, v);

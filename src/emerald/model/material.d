@@ -14,77 +14,68 @@ import emerald.all;
  *      sapphire    1.762–1.778 (1.77)
  *      diamond     2.419
  */
-__gshared Material GLASS  = Material.refract(1.5);
-__gshared Material MIRROR = Material.mirror(1);
-__gshared Material LIGHT  = Material.light(float3(12,12,12));
 
 final class Material {
+private:
+    __gshared static Material[] materials;
+public:
+    uint id;
     float3 emission         = float3(0,0,0);
     float3 colour           = float3(1,1,1);
+    float reflectance       = 0;
+    float refractIndex      = 0;
     float3 normalisedColour = float3(1,1,1);
-
+    float maxReflectance    = 1;
     Texture texture;
-
-    float reflectance    = 0;
-    float refractIndex   = 0;
-    float maxReflectance = 1;
-
     bool isDiffuse;
     bool isReflective;
-    bool isRefractive;
     bool isEmissive;
 
-    static Material diffuse(float3 c) {
-        Material m       = new Material();
-        m.c(c);
-        m.isDiffuse      = true;
-        return m;
-    }
-    static Material light(float3 emission) {
-        Material m       = new Material();
-        m.c(float3(0,0,0));
-        m.emission       = emission;
-        m.isEmissive     = true;
-        m.isDiffuse      = true;
-        return m;
-    }
-    static Material mirror(float r) {
-        Material m     = new Material();
-        m.reflectance  = r;
-        m.isReflective = true;
-        return m;
-    }
-    static Material refract(float eta) {
-        Material m     = new Material();
-        m.refractIndex = eta;
-        m.isRefractive = true;
-        return m;
+    static auto getAllMaterials() {
+        return materials;
     }
 
-    auto c(float3 colour) {
-        this.colour           = colour;
-        this.maxReflectance   = colour.max();
-        this.normalisedColour = colour / this.maxReflectance;
+    this() {
+        this.id = materials.length.as!uint;
+        materials ~= this;
+    }
+    auto setDiffuse(float3 c) {
+        this.isDiffuse        = true;
+        this.colour           = c;
+        this.maxReflectance   = c.max();
+        this.normalisedColour = c / this.maxReflectance;
         return this;
     }
-    auto e(float3 emission) {
-        this.emission   = emission;
-        this.isEmissive = true;
+    auto setEmission(float3 e) {
+        this.isEmissive       = true;
+        this.emission         = e;
         return this;
     }
-    auto refl(float r) {
-        this.reflectance = r;
+    auto setReflection(float r) {
         this.isReflective = true;
+        this.reflectance  = r;
         return this;
     }
-    auto refr(float eta) {
+    auto setRefraction(float eta) {
         this.refractIndex = eta;
-        this.isRefractive = true;
         return this;
     }
-    auto tex(Texture t) {
+    auto setTexture(Texture t) {
         this.texture = t;
         return this;
+    }
+    float[] getForGPU() {
+        return [
+            reflectance,
+            refractIndex,
+            colour.x,
+            colour.y,
+            colour.z,
+            emission.x,
+            emission.y,
+            emission.z,
+            texture is null ? -1f : texture.getIndex().as!float
+        ];
     }
 }
 

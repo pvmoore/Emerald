@@ -25,8 +25,6 @@ import emerald.all;
 
 final class Triangle : Shape {
 private:
-    bool swapUV;
-    float2 uvMin, uvRange, uvScale;
     bool hasVertexNormals;
 
     // Computed values
@@ -37,6 +35,8 @@ private:
 public:
     uint id;
     Material material;
+    bool swapUV;
+    float2 uvMin, uvRange, uvScale;
     float3 p0, p1, p2;
     float3 n0, n1, n2;
 
@@ -58,6 +58,14 @@ public:
     auto normals(float3 n0, float3 n1, float3 n2) {
         this.n0 = n0; this.n1 = n1; this.n2 = n2;
         this.hasVertexNormals = true;
+        return this;
+    }
+    /** Use face normals to generate vertex normals */
+    auto generateVertexNormals() {
+        normals((p1-p0).cross(p2-p0).normalised(),
+                (p1-p0).cross(p2-p0).normalised(),
+                (p1-p0).cross(p2-p0).normalised()
+        );
         return this;
     }
     auto transform(mat4 t) {
@@ -104,9 +112,6 @@ public:
     }
     override Material getMaterial() {
         return material;
-    }
-    override float2 getUV(IntersectInfo intersect) {
-        return intersect.uv;
     }
     /**
      *  https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm

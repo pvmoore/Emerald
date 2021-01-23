@@ -12,9 +12,11 @@ struct Triangle | BVH {
 // Supported shape types (the type is always the first float)
 #define type_bvh (0)
 #define type_tri (1)
+#define type_sphere (2)
 
-#define isBvh(i) (int(shapes[i]) == 0)
-#define isTri(i) (int(shapes[i]) == 1)
+#define isBvh(i)    (int(shapes[i]) == 0)
+#define isTri(i)    (int(shapes[i]) == 1)
+#define isSphere(i) (int(shapes[i]) == 2)
 
 #define SHAPE_type(i) int(shapes[i])
 #define SHAPE_aabb(i) AABB(vec3(shapes[i+1], shapes[i+2], shapes[i+3]), \
@@ -50,10 +52,10 @@ bool shape_intersect(Ray ray, inout IntersectInfo ii) {
 
                 stack[++sp] = left;
                 stack[++sp] = right;
-
-            } else {
-
+            } else if(isTri(shape)) {
                 hit = tri_intersect(shape, ray, ii) || hit;
+            } else {
+                hit = sphere_intersect(shape, ray, ii) || hit;
             }
         }
     }

@@ -28,19 +28,23 @@ public:
 
         shapes ~= [
             // Diffuse
-            new Sphere(8, float3( -10,15,45),	Material.diffuse(float3(1,0.8,0.3))),
+            new Sphere(8, float3( -10,15,45),	new Material().setDiffuse(float3(1,0.8,0.3))),
 
-            new Sphere(8, float3(   8,15,45),	Material.diffuse(float3(1,0.8,0.3))),
-            new Sphere(9, float3(   8,15,45),	Material.refract(1.52).c(float3(1.0,1.0,1.0))),
+            new Sphere(8, float3(   8,15,45),	new Material().setDiffuse(float3(1,0.8,0.3))),
+            new Sphere(9, float3(   8,15,45),	new Material().setRefraction(1.52)
+                                                              .setDiffuse(float3(1.0,1.0,1.0))),
 
-            new Sphere(8, float3(  28, 15,45),	Material.diffuse(float3(1,0.8,0.3))),
-            new Sphere(10, float3( 28,15,45),	Material.refract(1.52).c(float3(1.0,1.0,1.0))),
+            new Sphere(8, float3(  28, 15,45),	new Material().setDiffuse(float3(1,0.8,0.3))),
+            new Sphere(10, float3( 28,15,45),	new Material().setRefraction(1.52)
+                                                              .setDiffuse(float3(1.0,1.0,1.0))),
 
-            new Sphere(8, float3(  50, 15,45),	Material.diffuse(float3(1,0.8,0.3))),
-            new Sphere(11, float3( 50,15,45),	Material.refract(1.52).c(float3(1.0,1.0,1.0))),
+            new Sphere(8, float3(  50, 15,45),	new Material().setDiffuse(float3(1,0.8,0.3))),
+            new Sphere(11, float3( 50,15,45),	new Material().setRefraction(1.52)
+                                                              .setDiffuse(float3(1.0,1.0,1.0))),
 
-            new Sphere(8, float3(  76, 15,45),	Material.diffuse(float3(1,0.8,0.3))),
-            new Sphere(11, float3( 76, 15,45),	Material.refract(1.52).c(float3(1,0.8,0.3))),
+            new Sphere(8, float3(  76, 15,45),	new Material().setDiffuse(float3(1,0.8,0.3))),
+            new Sphere(11, float3( 76, 15,45),	new Material().setRefraction(1.52)
+                                                              .setDiffuse(float3(1,0.8,0.3))),
 
             // Mirror
 

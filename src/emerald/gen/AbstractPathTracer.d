@@ -6,10 +6,10 @@ enum AccelerationStructure { NONE, BVH, BIH }
 enum ACCELERATION_STRUCTURE = AccelerationStructure.BVH;
 
 @fastmath:
-abstract class AbstractPathTracer {
+abstract class AbstractPathTracer : IPathTracerStats {
 protected:
     enum PARALLEL       = true;
-    enum SUPERSAMPLES   = 1;  // 2
+    enum SUPERSAMPLES   = 2;  // 2
     enum MAX_THREADS    = 16;    // if PARALLEL == true
     enum SAMPS          = 1;
     enum INV_SAMPS      = 1.0/SAMPS;

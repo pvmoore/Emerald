@@ -39,9 +39,6 @@ public:
 	override Material getMaterial() {
 		expect(false); assert(false);
 	}
-	override float2 getUV(IntersectInfo intersect) {
-		expect(false); assert(false);
-	}
 	override void recalculate() {
 		left.recalculate();
 		right.recalculate();
