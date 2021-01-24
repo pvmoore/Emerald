@@ -20,7 +20,7 @@ struct Triangle | BVH {
 
 #define SHAPE_type(i) int(shapes[i])
 #define SHAPE_aabb(i) AABB(vec3(shapes[i+1], shapes[i+2], shapes[i+3]), \
-                         vec3(shapes[i+4], shapes[i+5], shapes[i+6]))
+                           vec3(shapes[i+4], shapes[i+5], shapes[i+6]))
 
 bool shape_intersect(Ray ray, inout IntersectInfo ii) {
 
@@ -33,11 +33,7 @@ bool shape_intersect(Ray ray, inout IntersectInfo ii) {
 
     stack[0] = 0; // shape 0
 
-    int count = 0;
-
     while(sp >= 0) {
-
-        count++;
 
         uint shape = stack[sp--];
 
@@ -59,11 +55,6 @@ bool shape_intersect(Ray ray, inout IntersectInfo ii) {
             }
         }
     }
-
-    // if(true && g_index == 0 && depth==0 && printBarrier()) {
-    //     printu(count);
-    //     printu(hit ? 1 : 0);
-    // }
 
     return hit;
 }
