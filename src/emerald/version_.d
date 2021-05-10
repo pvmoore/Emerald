@@ -7,6 +7,11 @@ enum VERSION = "0.13";
  * HISTORY
  * ##################################################################
  *
+ * To fix: Fix this error by creating one GPUPathTracer per frame.
+ *         Or possibly it only requires one targetImage per frame.
+ *   [ERROR] Validation Error: [ UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout ] Object 0: handle = 0x20566ebe0a8, type = VK_OBJECT_TYPE_COMMAND_BUFFER; | MessageID = 0x4dae5635 | Submitted command buffer expects VkImage 0x203fc60000000023[] (subresource: aspectMask 0x1 array layer 0, mip level 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_GENERAL.
+ *
+ *
  * 0.13 - TBC
  * 0.12 - Enable Spheres and materials for GPU path tracer
  * 0.11 - Optimise software path tracer slightly
