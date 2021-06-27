@@ -46,9 +46,9 @@ public:
     }
     void render(Frame frame) {
 
-        text.replaceText(0, TEXT_0.format(pathTracer.getIterations()));
-        text.replaceText(1, TEXT_1.format(pathTracer.getCurrentImageIterations()));
-        text.replaceText(2, TEXT_2.format(pathTracer.getComputeTime() / 1_000_000.0));
+        text.replace(0, TEXT_0.format(pathTracer.getIterations()));
+        text.replace(1, TEXT_1.format(pathTracer.getCurrentImageIterations()));
+        text.replace(2, TEXT_2.format(pathTracer.getComputeTime() / 1_000_000.0));
 
         auto computeFinished = pathTracer.compute(frame);
 
@@ -155,12 +155,15 @@ private:
     }
     void createText() {
         this.text = new Text(context, context.fonts().get("comic-mono-bold"), true, 1000)
-            .setCamera(camera)
+            .camera(camera)
             .setColour(WHITE)
-            .setSize(18)
-            .appendText(TEXT_0.format(0), 5, 5)
-            .appendText(TEXT_1.format(0), 5, 30)
-            .appendText(TEXT_2.format(0f), 5, 55);
+            .setSize(18);
+        this.text
+            .add(TEXT_0.format(0), 5, 5);
+        this.text
+            .add(TEXT_1.format(0), 5, 30);
+        this.text
+            .add(TEXT_2.format(0f), 5, 55);
     }
     void createQuad() {
         ImageMeta m = {

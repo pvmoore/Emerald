@@ -37,6 +37,21 @@ public:
 
         this.renderer = new Renderer(context, pathTracer, WIDTH,HEIGHT);
 
+        vk.addWindowEventListener(new class WindowEventListener {
+            override void keyPress(uint keyCode, uint scanCode, KeyAction action, uint mods) {
+                if(action!=KeyAction.PRESS) return;
+
+                switch(keyCode) {
+                    case GLFW_KEY_PRINT_SCREEN:
+                        if(photographer) photographer.takeSnapshot(renderer.getPixelData());
+                        break;
+                    case GLFW_KEY_PAUSE:
+                        break;
+                    default: break;
+                }
+            }
+        });
+
         vk.showWindow();
     }
     override void destroy() {
@@ -76,27 +91,6 @@ public:
         vk.mainLoop();
     }
     override void selectQueueFamilies(QueueManager queueManager) {
-
-    }
-    override void keyPress(uint keyCode, uint scanCode, KeyAction action, uint mods) {
-        if(action!=KeyAction.PRESS) return;
-
-        switch(keyCode) {
-            case GLFW_KEY_PRINT_SCREEN:
-                if(photographer) photographer.takeSnapshot(renderer.getPixelData());
-                break;
-            case GLFW_KEY_PAUSE:
-                break;
-            default: break;
-        }
-    }
-    override void mouseButton(MouseButton button, float x, float y, bool down, uint mods) {
-
-    }
-    override void mouseMoved(float x, float y) {
-
-    }
-    override void mouseWheel(float xdelta, float ydelta, float x, float y) {
 
     }
     override void render(Frame frame) {
