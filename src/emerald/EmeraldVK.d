@@ -102,8 +102,8 @@ private:
         auto mem = new MemoryAllocator(vk);
 
         auto maxLocal = mem.builder(0)
-                           .withAll(VMemoryProperty.DEVICE_LOCAL)
-                           .withoutAll(VMemoryProperty.HOST_VISIBLE)
+                           .withAll(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+                           .withoutAll(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
                            .maxHeapSize();
 
         this.log("Max local memory = %s MBs", maxLocal / 1.MB);
@@ -112,12 +112,12 @@ private:
             .withMemory(MemID.LOCAL, mem.allocStdDeviceLocal("Emerald_Local", 512.MB))
             .withMemory(MemID.STAGING, mem.allocStdStagingUpload("Emerald_Staging", 128.MB + 16.MB));
 
-        context.withBuffer(MemID.LOCAL, BufID.VERTEX, VBufferUsage.VERTEX | VBufferUsage.TRANSFER_DST, 1.MB)
-               .withBuffer(MemID.LOCAL, BufID.INDEX, VBufferUsage.INDEX | VBufferUsage.TRANSFER_DST, 1.MB)
-               .withBuffer(MemID.LOCAL, BufID.UNIFORM, VBufferUsage.UNIFORM | VBufferUsage.TRANSFER_DST, 1.MB)
-               .withBuffer(MemID.LOCAL, BufID.STORAGE, VBufferUsage.STORAGE | VBufferUsage.TRANSFER_DST, 128.MB)
-               .withBuffer(MemID.STAGING, BufID.STAGING, VBufferUsage.TRANSFER_SRC, 128.MB + 4.MB)
-               .withBuffer(MemID.STAGING, BufID.STAGING_DOWN, VBufferUsage.TRANSFER_DST, 4.MB);
+        context.withBuffer(MemID.LOCAL, BufID.VERTEX, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 1.MB)
+               .withBuffer(MemID.LOCAL, BufID.INDEX, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 1.MB)
+               .withBuffer(MemID.LOCAL, BufID.UNIFORM, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 1.MB)
+               .withBuffer(MemID.LOCAL, BufID.STORAGE, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 128.MB)
+               .withBuffer(MemID.STAGING, BufID.STAGING, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 128.MB + 4.MB)
+               .withBuffer(MemID.STAGING, BufID.STAGING_DOWN, VK_BUFFER_USAGE_TRANSFER_DST_BIT, 4.MB);
 
         context.withFonts("resources/fonts/")
                .withImages("resources/images/")

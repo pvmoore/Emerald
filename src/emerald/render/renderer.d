@@ -16,7 +16,7 @@ private:
 
     Camera2D camera;
     VkSampler sampler;
-    UpdateableImage!(VFormat.R8G8B8A8_UNORM) pixels;
+    UpdateableImage!(VK_FORMAT_R8G8B8A8_UNORM) pixels;
     Quad quad;
 public:
     this(VulkanContext context, AbstractPathTracer pathTracer, uint width, uint height) {
@@ -73,8 +73,7 @@ public:
             res.frameBuffer,
             toVkRect2D(0,0, vk.windowSize.toVkExtent2D),
             [ clearColour(0.2f,0,0,1) ],
-            VSubpassContents.INLINE
-            //VSubpassContents.SECONDARY_COMMAND_BUFFERS
+            VK_SUBPASS_CONTENTS_INLINE
         );
 
         quad.insideRenderPass(frame);
@@ -86,7 +85,7 @@ public:
         vk.getGraphicsQueue().submit(
             [b],
             [res.imageAvailable],
-            [VPipelineStage.COLOR_ATTACHMENT_OUTPUT],
+            [VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT],
             [res.renderFinished],  // signal semaphores
             res.fence              // fence
         );
@@ -103,11 +102,11 @@ private:
         this.sampler = device.createSampler(samplerCreateInfo());
     }
     void createUpdateableImage() {
-        this.pixels = new UpdateableImage!(VFormat.R8G8B8A8_UNORM)
-            (context, width, height, VImageUsage.SAMPLED, VImageLayout.SHADER_READ_ONLY_OPTIMAL);
+        this.pixels = new UpdateableImage!(VK_FORMAT_R8G8B8A8_UNORM)
+            (context, width, height, VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
         this.pixels
-            .image.createView(VFormat.R8G8B8A8_UNORM, VImageViewType._2D, VImageAspect.COLOR);
+            .image.createView(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT);
 
         this.pixels.clear(RGBAb(0,0,0,255));
     }

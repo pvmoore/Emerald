@@ -133,15 +133,15 @@ private:
     void createAccumulatedColoursBuffer() {
         this.accumulatedColours = context.memory(MemID.LOCAL).allocBuffer("AccumulatedColours",
                            width*height*float4.sizeof,
-                           VBufferUsage.STORAGE);
+                           VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     }
     void createTargetImage() {
         this.targetImage = context.memory(MemID.LOCAL).allocImage("TargetImage",
                            [width, height],
-                           VImageUsage.STORAGE | VImageUsage.SAMPLED ,
-                           VFormat.B8G8R8A8_UNORM,
+                           VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT ,
+                           VK_FORMAT_B8G8R8A8_UNORM,
                            (info) {});
-        this.targetImage.createView(VFormat.B8G8R8A8_UNORM, VImageViewType._2D, VImageAspect.COLOR);
+        this.targetImage.createView(VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT);
     }
     void createShapeData() {
         enum SHAPE_DATA_LENGTH = 1024*1024;
@@ -413,12 +413,12 @@ private:
     void createCommandPools() {
         this.computeCP = device.createCommandPool(
             vk.getComputeQueueFamily().index,
-            VCommandPoolCreate.TRANSIENT | VCommandPoolCreate.RESET_COMMAND_BUFFER
+            VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
         );
     }
     void createQueryPool() {
         this.queryPool = device.createQueryPool(
-            VQueryType.TIMESTAMP,       // queryType
+            VK_QUERY_TYPE_TIMESTAMP,       // queryType
             vk.swapchain.numImages*2    // num queries
         );
     }
@@ -446,18 +446,18 @@ private:
          */
         this.descriptors = new Descriptors(context)
             .createLayout()
-                .storageBuffer(VShaderStage.COMPUTE)
-                .storageBuffer(VShaderStage.COMPUTE)
-                .storageBuffer(VShaderStage.COMPUTE)
-                .storageBuffer(VShaderStage.COMPUTE)
-                .storageBuffer(VShaderStage.COMPUTE)
-                .combinedImageSampler(VShaderStage.COMPUTE)
-                .storageImage(VShaderStage.COMPUTE)
-                .uniformBuffer(VShaderStage.COMPUTE)
+                .storageBuffer(VK_SHADER_STAGE_COMPUTE_BIT)
+                .storageBuffer(VK_SHADER_STAGE_COMPUTE_BIT)
+                .storageBuffer(VK_SHADER_STAGE_COMPUTE_BIT)
+                .storageBuffer(VK_SHADER_STAGE_COMPUTE_BIT)
+                .storageBuffer(VK_SHADER_STAGE_COMPUTE_BIT)
+                .combinedImageSampler(VK_SHADER_STAGE_COMPUTE_BIT)
+                .storageImage(VK_SHADER_STAGE_COMPUTE_BIT)
+                .uniformBuffer(VK_SHADER_STAGE_COMPUTE_BIT)
                 .sets(1);
 
         if(DEBUG) {
-            shaderPrintf.createLayout(descriptors, VShaderStage.COMPUTE);
+            shaderPrintf.createLayout(descriptors, VK_SHADER_STAGE_COMPUTE_BIT);
         }
         descriptors.build();
 
@@ -469,9 +469,9 @@ private:
                 .add(materialData)
                 .add(accumulatedColours)
                 .add(textureSampler,
-                     texture.image.view(texture.format, VImageViewType._2D),
-                     VImageLayout.SHADER_READ_ONLY_OPTIMAL)
-                .add(targetImage.view(), VImageLayout.GENERAL)
+                     texture.image.view(texture.format, VK_IMAGE_VIEW_TYPE_2D),
+                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                .add(targetImage.view(), VK_IMAGE_LAYOUT_GENERAL)
                 .add(ubo)
                 .write();
 
@@ -506,7 +506,7 @@ private:
         pushConstants.random3 = uniform(0f, 1f, rng);
 
         ulong[2] queryData;
-        if(VkResult.VK_SUCCESS==device.getQueryPoolResults(queryPool, index*2, 2, 16, queryData.ptr, 8, VQueryResult._64_BIT)) {
+        if(VkResult.VK_SUCCESS==device.getQueryPoolResults(queryPool, index*2, 2, 16, queryData.ptr, 8, VK_QUERY_RESULT_64_BIT)) {
             computeTime = cast(ulong)((queryData[1]-queryData[0])*vk.limits.timestampPeriod);
         }
 
@@ -516,24 +516,24 @@ private:
         cmd.resetQueryPool(queryPool,
             index*2,    // firstQuery
             2);         // queryCount
-        cmd.writeTimestamp(VPipelineStage.TOP_OF_PIPE,
+        cmd.writeTimestamp(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
             queryPool,
             index*2); // query
 
         // Acquire the targetImage from graphics queue
         cmd.pipelineBarrier(
-            VPipelineStage.FRAGMENT_SHADER,
-            VPipelineStage.COMPUTE_SHADER,
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
             0,      // dependency flags
             null,   // memory barriers
             null,   // buffer barriers
             [
                 imageMemoryBarrier(
                     targetImage.handle,
-                    VAccess.NONE,
-                    VAccess.SHADER_WRITE,
-                    VImageLayout.UNDEFINED,
-                    VImageLayout.GENERAL,
+                    VK_ACCESS_NONE,
+                    VK_ACCESS_SHADER_WRITE_BIT,
+                    VK_IMAGE_LAYOUT_UNDEFINED,
+                    VK_IMAGE_LAYOUT_GENERAL,
                     vk.getGraphicsQueueFamily().index,
                     vk.getComputeQueueFamily().index
                 )
@@ -546,7 +546,7 @@ private:
         cmd.bindPipeline(pipeline);
 
         cmd.bindDescriptorSets(
-            VPipelineBindPoint.COMPUTE,
+            VK_PIPELINE_BIND_POINT_COMPUTE,
             pipeline.layout,
             0, // set 0
             [descriptors.getSet(0,0)],  // layout 0, set 0
@@ -554,7 +554,7 @@ private:
         );
         if(DEBUG) {
             cmd.bindDescriptorSets(
-                VPipelineBindPoint.COMPUTE,
+                VK_PIPELINE_BIND_POINT_COMPUTE,
                 pipeline.layout,
                 1, // set 1
                 [descriptors.getSet(1,0)],  // layout 1, set 0
@@ -564,7 +564,7 @@ private:
 
         cmd.pushConstants(
             pipeline.layout,
-            VShaderStage.COMPUTE,
+            VK_SHADER_STAGE_COMPUTE_BIT,
             0,
             PushConstants.sizeof,
             &pushConstants
@@ -575,25 +575,25 @@ private:
 
         // Release the targetImage
         cmd.pipelineBarrier(
-            VPipelineStage.COMPUTE_SHADER,
-            VPipelineStage.FRAGMENT_SHADER,
+            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
             0,      // dependency flags
             null,   // memory barriers
             null,   // buffer barriers
             [
                 imageMemoryBarrier(
                     targetImage.handle,
-                    VAccess.SHADER_WRITE,
-                    VAccess.SHADER_READ,
-                    VImageLayout.GENERAL,
-                    VImageLayout.GENERAL,
+                    VK_ACCESS_SHADER_WRITE_BIT,
+                    VK_ACCESS_SHADER_READ_BIT,
+                    VK_IMAGE_LAYOUT_GENERAL,
+                    VK_IMAGE_LAYOUT_GENERAL,
                     vk.getComputeQueueFamily().index,
                     vk.getGraphicsQueueFamily().index
                 )
             ]
         );
 
-        cmd.writeTimestamp(VPipelineStage.BOTTOM_OF_PIPE,
+        cmd.writeTimestamp(VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
             queryPool,
             index*2+1); // query
 

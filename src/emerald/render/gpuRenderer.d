@@ -5,7 +5,7 @@ import vulkan;
 
 final class GPURenderer {
 private:
-    enum {
+    __gshared enum {
         TEXT_0 = "Iterations ..... %s",
         TEXT_1 = "Frame Iterations %s",
         TEXT_2 = "Compute time ... %.2f ms"
@@ -62,18 +62,18 @@ public:
         if(frame.number.value!=0) {
             // acquire the image from compute queue and transform to fragment shader read
             b.pipelineBarrier(
-                VPipelineStage.COMPUTE_SHADER,
-                VPipelineStage.FRAGMENT_SHADER,
+                VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                 0,      // dependency flags
                 null,   // memory barriers
                 null,   // buffer barriers
                 [
                     imageMemoryBarrier(
                         pathTracer.getTargetImage().handle,
-                        VAccess.SHADER_WRITE,
-                        VAccess.SHADER_READ,
-                        VImageLayout.GENERAL,
-                        VImageLayout.SHADER_READ_ONLY_OPTIMAL,
+                        VK_ACCESS_SHADER_WRITE_BIT,
+                        VK_ACCESS_SHADER_READ_BIT,
+                        VK_IMAGE_LAYOUT_GENERAL,
+                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                         vk.getComputeQueueFamily().index,
                         vk.getGraphicsQueueFamily().index
                     )
@@ -87,8 +87,7 @@ public:
             res.frameBuffer,
             toVkRect2D(0,0, vk.windowSize.toVkExtent2D),
             [ clearColour(0.2f,0,0,1) ],
-            VSubpassContents.INLINE
-            //VSubpassContents.SECONDARY_COMMAND_BUFFERS
+            VK_SUBPASS_CONTENTS_INLINE
         );
 
         quad.insideRenderPass(frame);
@@ -99,18 +98,18 @@ public:
 
         // Release the targetImage
         b.pipelineBarrier(
-            VPipelineStage.FRAGMENT_SHADER,
-            VPipelineStage.COMPUTE_SHADER,
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
             0,      // dependency flags
             null,   // memory barriers
             null,   // buffer barriers
             [
                 imageMemoryBarrier(
                     pathTracer.getTargetImage().handle,
-                    VAccess.SHADER_READ,
-                    VAccess.SHADER_WRITE,
-                    VImageLayout.SHADER_READ_ONLY_OPTIMAL,
-                    VImageLayout.GENERAL,
+                    VK_ACCESS_SHADER_READ_BIT,
+                    VK_ACCESS_SHADER_WRITE_BIT,
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    VK_IMAGE_LAYOUT_GENERAL,
                     vk.getGraphicsQueueFamily().index,
                     vk.getComputeQueueFamily().index
                 )
@@ -122,8 +121,8 @@ public:
         auto waitSemaphores = [
             res.imageAvailable, computeFinished
         ];
-        auto waitStages = [
-            VPipelineStage.COLOR_ATTACHMENT_OUTPUT, VPipelineStage.COMPUTE_SHADER
+        uint[] waitStages = [
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
         ];
 
         /// Submit our render buffer
@@ -168,7 +167,7 @@ private:
     void createQuad() {
         ImageMeta m = {
             image: pathTracer.getTargetImage(),
-            format: VFormat.B8G8R8A8_UNORM
+            format: VK_FORMAT_B8G8R8A8_UNORM
         };
         this.quad = new Quad(context, m, linearSampler);
 
