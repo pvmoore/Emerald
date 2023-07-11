@@ -2,7 +2,11 @@ module emerald.gen.GPUPathTracer;
 
 import emerald.all;
 import vulkan;
-
+/** 
+ * TODO: Create one VkCommandBuffer per frame. At the moment
+ * we are reusing the same command buffer and getting warnings 
+ * in the log.
+ */
 final class GPUPathTracer : IPathTracerStats {
 private:
     static struct PushConstants {
@@ -510,6 +514,10 @@ private:
             computeTime = cast(ulong)((queryData[1]-queryData[0])*vk.limits.timestampPeriod);
         }
 
+        auto externalPlStage = 
+            //VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+
         // Setup compute buffer
         cmd.beginOneTimeSubmit();
 
@@ -522,7 +530,7 @@ private:
 
         // Acquire the targetImage from graphics queue
         cmd.pipelineBarrier(
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            externalPlStage,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
             0,      // dependency flags
             null,   // memory barriers
@@ -576,7 +584,7 @@ private:
         // Release the targetImage
         cmd.pipelineBarrier(
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            externalPlStage,
             0,      // dependency flags
             null,   // memory barriers
             null,   // buffer barriers

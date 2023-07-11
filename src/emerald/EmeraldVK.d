@@ -78,6 +78,9 @@ public:
 
         if(context) context.destroy();
     }
+    override void selectFeatures(DeviceFeatures features) {
+
+    }
     override void deviceReady(VkDevice device, PerFrameResource[] frameResources) {
         this.log("deviceReady");
         this.device = device;

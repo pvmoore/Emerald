@@ -74,7 +74,7 @@ public:
         triangles[0].recalculate();
         triangles[1].recalculate();
 
-        return triangles[0..$].map!(it=>it.as!Shape).array;
+        return triangles[0..$].map!(it=>it.as!Shape).array.dup;
     }
     auto setUVScale(float2 uv) {
         this.uvScale = uv;

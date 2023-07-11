@@ -56,7 +56,7 @@ public:
 	    auto b = res.adhocCB;
 	    b.beginOneTimeSubmit();
 
-        fps.beforeRenderPass(frame, vk.getFPS());
+        fps.beforeRenderPass(frame, vk.getFPSSnapshot());
         text.beforeRenderPass(frame);
 
         if(frame.number.value!=0) {
