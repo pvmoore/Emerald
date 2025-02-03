@@ -23,7 +23,10 @@ public:
             frameBuffers: 3
         };
         VulkanProperties vprops = {
-            appName: "Emerald "~VERSION
+            appName: "Emerald "~VERSION,
+            shaderSrcDirectories: ["resources/shaders/", "/pvmoore/d/libs/vulkan/shaders/"],
+            shaderDestDirectory: "resources/shaders/",
+            shaderSpirvVersion: "1.0"
         };
 
         //vprops.layers ~= "VK_LAYER_LUNARG_monitor".ptr;
@@ -124,7 +127,6 @@ private:
 
         context.withFonts("resources/fonts/")
                .withImages("resources/images/")
-               .withShaderCompiler("resources/shaders", "resources/shaders")
                .withRenderPass(renderPass);
 
         this.log("shared mem available = %s", context.hasMemory(MemID.SHARED));

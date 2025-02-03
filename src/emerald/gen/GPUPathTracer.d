@@ -486,7 +486,7 @@ private:
     void createPipeline() {
         this.pipeline = new ComputePipeline(context)
             .withDSLayouts(descriptors.getAllLayouts())
-            .withShader(context.shaderCompiler().getModule("pathtracer.comp"))
+            .withShader(context.shaders().getModule("pathtracer.comp"))
             .withPushConstantRange!PushConstants()
             .build();
     }
