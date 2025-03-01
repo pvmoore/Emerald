@@ -36,15 +36,3 @@ layout(std140, push_constant) uniform readonly PC {
 	float random2;
 	float random3;
 } pc;
-
-
-
-// ==============================================  printf start
-// layout(set=1, binding=0, std430) writeonly buffer PRINTF_BUFFER {
-// 	float buf[];
-// } printf;
-// layout(set=1, binding=1, std430) buffer PRINTF_STATS {
-// 	uint buf[];
-// } printf_stats;
-// #include "_printf.inc"
-// ============================================== printf end

@@ -24,7 +24,6 @@ private:
         float3 cameraDirection; // normalised
         float _pad2;
     }
-    enum DEBUG = false;
 
     @Borrowed VulkanContext context;
     @Borrowed VkDevice device;
@@ -41,7 +40,6 @@ private:
     PushConstants pushConstants;
     ulong computeTime;
 
-    ShaderPrintf shaderPrintf;
     Descriptors descriptors;
     ComputePipeline pipeline;
     StaticGPUData!float randomBuffer;
@@ -87,7 +85,6 @@ public:
         this.log("Destroying");
 
         if(queryPool) device.destroyQueryPool(queryPool);
-        if(shaderPrintf) shaderPrintf.destroy();
         if(computeCP) device.destroyCommandPool(computeCP);
         if(descriptors) descriptors.destroy();
         if(pipeline) pipeline.destroy();
@@ -119,7 +116,6 @@ private:
         createQueryPool();
         createCommandBuffer();
         createSemaphore();
-        createShaderPrintf();
         createDescriptors();
         createPipeline();
 
@@ -432,11 +428,6 @@ private:
     void createSemaphore() {
         this.computeFinished = device.createSemaphore();
     }
-    void createShaderPrintf() {
-        if(DEBUG) {
-            this.shaderPrintf = new ShaderPrintf(context);
-        }
-    }
     void createDescriptors() {
         /**
          * 0 - Random data
@@ -460,9 +451,6 @@ private:
                 .uniformBuffer(VK_SHADER_STAGE_COMPUTE_BIT)
                 .sets(1);
 
-        if(DEBUG) {
-            shaderPrintf.createLayout(descriptors, VK_SHADER_STAGE_COMPUTE_BIT);
-        }
         descriptors.build();
 
         descriptors
@@ -478,10 +466,6 @@ private:
                 .add(targetImage.view(), VK_IMAGE_LAYOUT_GENERAL)
                 .add(ubo)
                 .write();
-
-        if(DEBUG) {
-            shaderPrintf.createDescriptorSet(descriptors, 1);
-        }
     }
     void createPipeline() {
         this.pipeline = new ComputePipeline(context)
@@ -491,10 +475,6 @@ private:
             .build();
     }
     VkSemaphore computeFrame(Frame frame) {
-
-        if(DEBUG) {
-            //shaderPrintf.reset();
-        }
 
         uint index = frame.resource.index;
 
@@ -560,15 +540,6 @@ private:
             [descriptors.getSet(0,0)],  // layout 0, set 0
             null
         );
-        if(DEBUG) {
-            cmd.bindDescriptorSets(
-                VK_PIPELINE_BIND_POINT_COMPUTE,
-                pipeline.layout,
-                1, // set 1
-                [descriptors.getSet(1,0)],  // layout 1, set 0
-                null
-            );
-        }
 
         cmd.pushConstants(
             pipeline.layout,
@@ -614,16 +585,6 @@ private:
             [computeFinished],  // signalSemaphores
             null                // fence
         );
-
-        if(DEBUG) {
-            auto str = shaderPrintf.getDebugString();
-            if(str) {
-                log("\nShader debug output:");
-                log("===========================");
-                log("%s", shaderPrintf.getDebugString());
-                log("\n===========================\n");
-            }
-        }
 
         // Set the image state to continue
         pushConstants.imageState = 0;

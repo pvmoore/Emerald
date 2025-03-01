@@ -26,7 +26,8 @@ public:
             appName: "Emerald "~VERSION,
             shaderSrcDirectories: ["resources/shaders/", "/pvmoore/d/libs/vulkan/shaders/"],
             shaderDestDirectory: "resources/shaders/",
-            shaderSpirvVersion: "1.0"
+            apiVersion: vulkanVersion(1,1,0),
+            shaderSpirvVersion: "1.3"
         };
 
         //vprops.layers ~= "VK_LAYER_LUNARG_monitor".ptr;
