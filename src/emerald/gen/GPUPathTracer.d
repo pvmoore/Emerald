@@ -145,7 +145,14 @@ private:
     }
     void createShapeData() {
         enum SHAPE_DATA_LENGTH = 1024*1024;
-        this.shapeData = new GPUData!float(context, BufID.STORAGE, true, SHAPE_DATA_LENGTH*float.sizeof).initialise();
+        this.shapeData = new GPUData!float(context, BufID.STORAGE, true, SHAPE_DATA_LENGTH*float.sizeof)
+            .withAccessAndStageMasks(AccessAndStageMasks(
+                VkAccessFlagBits.VK_ACCESS_SHADER_READ_BIT,
+                VkAccessFlagBits.VK_ACCESS_SHADER_READ_BIT,
+                VkPipelineStageFlagBits.VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                VkPipelineStageFlagBits.VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
+            ))
+            .initialise();
 
         // Convert shape data so that it contains only BVH or Triangle
         float[] data = new float[SHAPE_DATA_LENGTH];
@@ -404,7 +411,14 @@ private:
             .uploadData(data);
     }
     void createUBO() {
-        ubo = new GPUData!UBO(context, BufID.UNIFORM, true).initialise();
+        ubo = new GPUData!UBO(context, BufID.UNIFORM, true)
+            .withAccessAndStageMasks(AccessAndStageMasks(
+                    VkAccessFlagBits.VK_ACCESS_UNIFORM_READ_BIT,
+                    VkAccessFlagBits.VK_ACCESS_UNIFORM_READ_BIT,
+                    VkPipelineStageFlagBits.VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                    VkPipelineStageFlagBits.VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
+            ))
+            .initialise();
         ubo.write((u) {
             u.cameraPosition = scene.getCamera().position;
             u.cameraDirection = scene.getCamera().direction.normalised();
@@ -555,7 +569,8 @@ private:
         // Release the targetImage
         cmd.pipelineBarrier(
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-            externalPlStage,
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            //externalPlStage,
             0,      // dependency flags
             null,   // memory barriers
             null,   // buffer barriers
@@ -565,7 +580,7 @@ private:
                     VK_ACCESS_SHADER_WRITE_BIT,
                     VK_ACCESS_SHADER_READ_BIT,
                     VK_IMAGE_LAYOUT_GENERAL,
-                    VK_IMAGE_LAYOUT_GENERAL,
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                     vk.getComputeQueueFamily().index,
                     vk.getGraphicsQueueFamily().index
                 )

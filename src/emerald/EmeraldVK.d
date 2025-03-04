@@ -20,15 +20,18 @@ public:
             title:        "Emerald "~VERSION,
             icon:         "/pvmoore/_assets/icons/3dshapes.png",
             showWindow:   false,
-            frameBuffers: 3
+            frameBuffers: 3,
+            titleBarFps:  true,
         };
         VulkanProperties vprops = {
             appName: "Emerald "~VERSION,
             shaderSrcDirectories: ["resources/shaders/", "/pvmoore/d/libs/vulkan/shaders/"],
             shaderDestDirectory: "resources/shaders/",
-            apiVersion: vulkanVersion(1,1,0),
+            apiVersion: vulkanVersion(1,3,0),
             shaderSpirvVersion: "1.3"
         };
+
+        vprops.enableGpuValidation = false;
 
         //vprops.layers ~= "VK_LAYER_LUNARG_monitor".ptr;
 
