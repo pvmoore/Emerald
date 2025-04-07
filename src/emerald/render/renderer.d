@@ -103,7 +103,9 @@ private:
     }
     void createUpdateableImage() {
         this.pixels = new UpdateableImage!(VK_FORMAT_R8G8B8A8_UNORM)
-            (context, width, height, VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            (context, width, height, VK_IMAGE_USAGE_SAMPLED_BIT, 
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
 
         this.pixels
             .image.createView(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT);
