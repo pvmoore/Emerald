@@ -6,9 +6,11 @@ bin/
 
 .dub/
 .logs/
+.cache/
 
 *.exe
 *.lib
 *.bmp
 *.lnk
 *.spv
+*.pdb

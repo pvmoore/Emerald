@@ -16,7 +16,8 @@ version(LDC) {
 }
 
 import logging   : log, flushLog, setEagerFlushing;
-import common    : as, Borrowed, expect, From, isA, todo;
+import common    : Borrowed;
+import common.utils: as, expect, isA, From, todo;
 import resources : Image, BMP, PNG, Obj, ModelData;
 import maths     : AABB,
                    Angle,

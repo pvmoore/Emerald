@@ -84,7 +84,7 @@ public:
         // begin the render pass
         b.beginRenderPass(
             context.renderPass,
-            res.frameBuffer,
+            frame.frameBuffer,
             toVkRect2D(0,0, vk.windowSize.toVkExtent2D),
             [ clearColour(0.2f,0,0,1) ],
             VK_SUBPASS_CONTENTS_INLINE

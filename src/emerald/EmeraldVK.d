@@ -18,7 +18,7 @@ public:
             fullscreen:   false,
             vsync:        false,
             title:        "Emerald "~VERSION,
-            icon:         "/pvmoore/_assets/icons/3dshapes.png",
+            icon:         "resources/images/bird-logo.png",
             showWindow:   false,
             frameBuffers: 3,
             titleBarFps:  true,
@@ -45,7 +45,7 @@ public:
         this.renderer = new Renderer(context, pathTracer, WIDTH,HEIGHT);
 
         vk.addWindowEventListener(new class WindowEventListener {
-            override void keyPress(uint keyCode, uint scanCode, KeyAction action, uint mods) {
+            override void keyPress(uint keyCode, uint scanCode, KeyAction action, KeyMod mods) {
                 if(action!=KeyAction.PRESS) return;
 
                 switch(keyCode) {
