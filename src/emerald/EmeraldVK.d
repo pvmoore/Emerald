@@ -88,7 +88,7 @@ public:
     override void selectFeatures(DeviceFeatures features) {
 
     }
-    override void deviceReady(VkDevice device, PerFrameResource[] frameResources) {
+    override void deviceReady(VkDevice device) {
         this.log("deviceReady");
         this.device = device;
 
