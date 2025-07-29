@@ -53,9 +53,9 @@ void main() {
         bool matIsReflective = matReflectance > 0;
         bool matIsRefractive = matRefractiveIndex > 0;
 
-        vec3 f = textureIndex >= 0
-                    ? texture(textureSampler, convertUV(textureIndex, ii.uv)).rgb * diffuse
-                    : diffuse / maxReflectance;
+        vec3 f = (textureIndex >= 0 ? (texture(textureSampler, convertUV(textureIndex, ii.uv)).rgb * diffuse)
+                                    : diffuse) 
+                / maxReflectance;
 
         reflectance *= f;
 
