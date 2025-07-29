@@ -26,7 +26,7 @@ public:
         VulkanProperties vprops = {
             appName: "Emerald "~VERSION,
             shaderSrcDirectories: ["resources/shaders/", "/pvmoore/d/libs/vulkan/shaders/"],
-            shaderDestDirectory: "resources/shaders/",
+            shaderDestDirectory: "resources/shaders/spv/",
             apiVersion: VK_API_VERSION_1_3,
             shaderSpirvVersion: "1.3"
         };
