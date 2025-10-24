@@ -101,7 +101,7 @@ protected:
         new Sphere(1e4,		float3(50,40.8, 1e4),		green),//Back
         new Sphere(1e4,		float3(50,40.8,-1e4+170),	black),//Frnt
         new Sphere(1e4,		float3(50, 1e4, 81.6),		dullwhite),//Botm
-        new Sphere(1e4,		float3(50,-1e4+81.6,81.6),	dullwhite)//Top
+        new Sphere(1e4,		float3(50,-1e4 + 81.6,81.6),dullwhite)//Top
         ];
     }
     // void addBox(float3 p0, float3 dim, Material mat) {

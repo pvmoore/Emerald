@@ -426,7 +426,7 @@ private:
     }
     void createCommandPools() {
         this.computeCP = device.createCommandPool(
-            vk.getComputeQueueFamily().index,
+            vk.getComputeQueueFamily(),
             VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
         );
     }
@@ -536,8 +536,8 @@ private:
                     VK_ACCESS_SHADER_WRITE_BIT,
                     VK_IMAGE_LAYOUT_UNDEFINED,
                     VK_IMAGE_LAYOUT_GENERAL,
-                    vk.getGraphicsQueueFamily().index,
-                    vk.getComputeQueueFamily().index
+                    vk.getGraphicsQueueFamily(),
+                    vk.getComputeQueueFamily()
                 )
             ]
         );
@@ -581,8 +581,8 @@ private:
                     VK_ACCESS_SHADER_READ_BIT,
                     VK_IMAGE_LAYOUT_GENERAL,
                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                    vk.getComputeQueueFamily().index,
-                    vk.getGraphicsQueueFamily().index
+                    vk.getComputeQueueFamily(),
+                    vk.getGraphicsQueueFamily()
                 )
             ]
         );

@@ -33,8 +33,6 @@ public:
 
         vprops.enableGpuValidation = false;
 
-        //vprops.layers ~= "VK_LAYER_LUNARG_monitor".ptr;
-
 		this.vk = new Vulkan(this, wprops, vprops);
         vk.initialise();
     }
@@ -85,7 +83,7 @@ public:
 
         if(context) context.destroy();
     }
-    override void selectFeatures(DeviceFeatures features) {
+    override void selectFeaturesAndExtensions(FeaturesAndExtensions fae) {
 
     }
     override void deviceReady(VkDevice device) {
